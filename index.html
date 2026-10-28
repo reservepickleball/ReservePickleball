@@ -173,9 +173,9 @@
         <div>
           <h2 class="text-base font-bold text-white flex items-center gap-2">
             <i class="fa-solid fa-calendar-days text-lime-400"></i>
-            Select Present or Future Date / View
+            Select Present or Future Date
           </h2>
-          <p class="text-xs text-slate-400">Past dates are disabled. Switch between Month View or Weekly Summary Matrix below.</p>
+          <p class="text-xs text-slate-400">Past dates are disabled. Choose today or future dates to view or book timeslots.</p>
         </div>
 
         <!-- View Switcher (Monthly vs Weekly) -->
@@ -184,7 +184,7 @@
             <i class="fa-solid fa-calendar-grid"></i> Month View
           </button>
           <button id="viewWeekBtn" onclick="switchCalendarView('week')" class="px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition">
-            <i class="fa-solid fa-calendar-week"></i> Week Summary View
+            <i class="fa-solid fa-calendar-week"></i> Week View
           </button>
         </div>
       </div>
@@ -213,17 +213,19 @@
         <div id="monthGrid" class="grid grid-cols-7 gap-1.5 text-xs"></div>
       </div>
 
-      <!-- WEEK SUMMARY NAVIGATOR -->
+      <!-- WEEK CALENDAR CONTAINER WITH DAILY OCCUPANCY INDICATORS -->
       <div id="weekCalendarContainer" class="hidden space-y-3">
         <div class="flex items-center justify-between px-1">
           <button onclick="changeWeek(-1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
             <i class="fa-solid fa-chevron-left"></i> Prev Week
           </button>
-          <span id="currentWeekRangeLabel" class="text-xs font-bold text-lime-400 uppercase tracking-wide"></span>
+          <span id="currentWeekRangeLabel" class="text-xs font-bold text-slate-300"></span>
           <button onclick="changeWeek(1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
             Next Week <i class="fa-solid fa-chevron-right"></i>
           </button>
         </div>
+
+        <div id="weekGrid" class="grid grid-cols-1 sm:grid-cols-7 gap-2"></div>
       </div>
 
       <!-- Selected Date Banner & Stats -->
@@ -231,7 +233,7 @@
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-clock text-lime-400 text-lg"></i>
           <div>
-            <span class="text-xs text-slate-400 block" id="dateBannerTitle">Selected Date Schedule:</span>
+            <span class="text-xs text-slate-400 block">Selected Date Schedule:</span>
             <span id="selectedDateDisplay" class="text-sm font-bold text-white">---</span>
           </div>
         </div>
@@ -261,11 +263,11 @@
       </div>
     </div>
 
-    <!-- SCHEDULE MATRIX TABLE (DYNAMIC FOR DAY OR WEEK SUMMARY VIEW) -->
+    <!-- SCHEDULE MATRIX TABLE -->
     <div class="glass-card rounded-2xl p-5 border border-slate-800 shadow-xl overflow-x-auto">
-      <div id="matrixContainerWrapper" class="min-w-[700px]">
-        <!-- Table Header populated dynamically based on view -->
-        <div id="matrixHeader" class="grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider">
+      <div class="min-w-[700px]">
+        <!-- Table Header -->
+        <div class="grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider">
           <div class="col-span-1">Timeslot (9 AM - 12 AM)</div>
           <div class="col-span-1 text-center">Standard Main Court (₱600/hr)</div>
           <div class="col-span-1 text-center">AC Range 1 + Machine (₱400/hr)</div>
@@ -373,9 +375,10 @@
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
+    // CONSTANTS & CONFIG
     const ADMIN_PIN = "113322";
     const FB_PAGE_ID = "61595264373061";
-    const PENCIL_DURATION_MS = 15 * 60 * 1000;
+    const PENCIL_DURATION_MS = 15 * 60 * 1000; // 15 Minutes
 
     const OPERATING_HOURS = [
       "09:00 AM - 10:00 AM",
@@ -401,16 +404,20 @@
       { id: "range2", name: "Airconditioned Range 2 (Machine + Balls)", price: 400, limit: "Up to 4 Players" }
     ];
 
+    // APPLICATION STATE
     let isAdmin = false;
     let selectedDate = new Date();
-    let calendarView = 'month'; // 'month' or 'week'
+    let calendarView = 'month';
     let displayedMonthDate = new Date();
     let customerSelections = [];
 
     const LOCAL_STORAGE_KEY = "reserve_pickleball_schedule_db_v2";
 
+    // INITIALIZATION & TIMER CHECK
     window.addEventListener("DOMContentLoaded", () => {
+      // Normalize selectedDate to midnight for correct date comparison
       selectedDate.setHours(0, 0, 0, 0);
+
       cleanExpiredPencilBookings();
       setInterval(cleanExpiredPencilBookings, 10000);
 
@@ -476,26 +483,24 @@
         weekBtn.className = "px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition";
         monthContainer.classList.remove('hidden');
         weekContainer.classList.add('hidden');
-        document.getElementById('dateBannerTitle').innerText = "Selected Date Schedule:";
       } else {
         weekBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-lime-400 text-slate-950 transition";
         monthBtn.className = "px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition";
         weekContainer.classList.remove('hidden');
         monthContainer.classList.add('hidden');
-        document.getElementById('dateBannerTitle').innerText = "Weekly Summary Range:";
       }
       renderCalendar();
-      renderScheduleGrid();
     }
 
     function renderCalendar() {
       if (calendarView === 'month') {
         renderMonthCalendar();
       } else {
-        renderWeekSummaryBar();
+        renderWeekCalendar();
       }
     }
 
+    // MONTH CALENDAR (RESTRICTING PAST DATES)
     function renderMonthCalendar() {
       const monthGrid = document.getElementById('monthGrid');
       const monthLabel = document.getElementById('currentMonthYearLabel');
@@ -517,6 +522,8 @@
       }
 
       const selectedKey = getDateKey(selectedDate);
+      
+      // Today normalized to midnight for accurate comparison
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -532,9 +539,11 @@
         const dayBtn = document.createElement('button');
 
         if (isPast) {
+          // Disabled Style for Past Dates
           dayBtn.className = "h-9 rounded-lg border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 flex flex-col items-center justify-center";
           dayBtn.disabled = true;
         } else {
+          // Active Style for Present & Future Dates
           dayBtn.className = `h-9 rounded-lg border transition text-xs font-semibold flex flex-col items-center justify-center relative ${
             isSelected 
               ? 'cal-day-active border-lime-400 shadow-lg shadow-lime-400/20' 
@@ -561,8 +570,12 @@
       renderMonthCalendar();
     }
 
-    function renderWeekSummaryBar() {
+    // WEEK CALENDAR (RESTRICTING PAST DATES)
+    function renderWeekCalendar() {
+      const weekGrid = document.getElementById('weekGrid');
       const weekLabel = document.getElementById('currentWeekRangeLabel');
+      weekGrid.innerHTML = "";
+
       const startOfWeek = new Date(selectedDate);
       startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
 
@@ -570,6 +583,79 @@
       endOfWeek.setDate(startOfWeek.getDate() + 6);
 
       weekLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+
+      const selectedKey = getDateKey(selectedDate);
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const db = getStoredData();
+      const totalPossibleSlots = OPERATING_HOURS.length * COURTS.length;
+
+      for (let i = 0; i < 7; i++) {
+        const dayDate = new Date(startOfWeek);
+        dayDate.setDate(startOfWeek.getDate() + i);
+        dayDate.setHours(0, 0, 0, 0);
+
+        const dayKey = getDateKey(dayDate);
+        const isSelected = dayKey === selectedKey;
+        const isToday = dayDate.getTime() === today.getTime();
+        const isPast = dayDate.getTime() < today.getTime();
+
+        const dayData = db[dayKey] || {};
+        let occupiedSlots = 0;
+
+        Object.keys(dayData).forEach(k => {
+          const val = dayData[k];
+          if (val === 'reserved' || (typeof val === 'object' && val.status === 'pencil')) {
+            occupiedSlots++;
+          }
+        });
+
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const occupancyPercentage = Math.round((occupiedSlots / totalPossibleSlots) * 100);
+
+        const dayCard = document.createElement('button');
+
+        if (isPast) {
+          dayCard.className = "p-3 rounded-xl border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 text-left flex flex-col justify-between";
+          dayCard.disabled = true;
+        } else {
+          dayCard.className = `p-3 rounded-xl border transition text-left flex flex-col justify-between ${
+            isSelected 
+              ? 'cal-day-active border-lime-400 shadow-md' 
+              : isToday 
+                ? 'bg-slate-800 text-lime-400 border-lime-400/50' 
+                : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
+          }`;
+
+          dayCard.onclick = () => {
+            selectedDate = dayDate;
+            updateSelectedDateDisplay();
+            renderCalendar();
+            renderScheduleGrid();
+          };
+        }
+
+        dayCard.innerHTML = `
+          <div class="flex justify-between items-center w-full">
+            <span class="text-[10px] uppercase font-bold opacity-75">${dayNames[i]}</span>
+            <span class="text-xs font-black">${dayDate.getDate()}</span>
+          </div>
+          
+          <div class="mt-2 space-y-1 w-full">
+            <div class="flex justify-between text-[10px] font-semibold">
+              <span>Booked:</span>
+              <span class="${occupiedSlots > 30 ? 'text-red-400 font-bold' : 'opacity-90'}">${occupiedSlots} / ${totalPossibleSlots}</span>
+            </div>
+            <div class="w-full bg-slate-950/40 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-amber-400 h-1.5 rounded-full" style="width: ${occupancyPercentage}%"></div>
+            </div>
+          </div>
+        `;
+
+        weekGrid.appendChild(dayCard);
+      }
     }
 
     function changeWeek(delta) {
@@ -581,193 +667,85 @@
     }
 
     function updateSelectedDateDisplay() {
-      if (calendarView === 'month') {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('selectedDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
-      } else {
-        const startOfWeek = new Date(selectedDate);
-        startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        document.getElementById('selectedDateDisplay').innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} to ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-      }
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('selectedDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
     }
 
-    // RENDER SCHEDULE MATRIX (DAY VIEW vs WEEK SUMMARY MATRIX VIEW)
     function renderScheduleGrid() {
       const grid = document.getElementById('scheduleGrid');
-      const header = document.getElementById('matrixHeader');
       grid.innerHTML = "";
 
       const db = getStoredData();
+      const dateKey = getDateKey();
+      const dayData = db[dateKey] || {};
+
       let availCount = 0;
       let reservedCount = 0;
       let pencilCount = 0;
 
-      if (calendarView === 'month') {
-        // --- STANDARD DAY VIEW ---
-        header.className = "grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider";
-        header.innerHTML = `
-          <div class="col-span-1">Timeslot (9 AM - 12 AM)</div>
-          <div class="col-span-1 text-center">Standard Main Court (₱600/hr)</div>
-          <div class="col-span-1 text-center">AC Range 1 + Machine (₱400/hr)</div>
-          <div class="col-span-1 text-center">AC Range 2 + Machine (₱400/hr)</div>
-        `;
+      OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
+        const row = document.createElement('div');
+        row.className = "grid grid-cols-4 gap-3 py-3 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
 
-        const dateKey = getDateKey();
-        const dayData = db[dateKey] || {};
+        const timeCol = document.createElement('div');
+        timeCol.className = "col-span-1 font-bold text-slate-200 text-xs flex items-center gap-1.5";
+        timeCol.innerHTML = `<i class="fa-regular fa-clock text-lime-400"></i> ${timeSlot}`;
+        row.appendChild(timeCol);
 
-        OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
-          const row = document.createElement('div');
-          row.className = "grid grid-cols-4 gap-3 py-3 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
+        COURTS.forEach(court => {
+          const courtCol = document.createElement('div');
+          courtCol.className = "col-span-1 flex justify-center";
 
-          const timeCol = document.createElement('div');
-          timeCol.className = "col-span-1 font-bold text-slate-200 text-xs flex items-center gap-1.5";
-          timeCol.innerHTML = `<i class="fa-regular fa-clock text-lime-400"></i> ${timeSlot}`;
-          row.appendChild(timeCol);
+          const slotKey = `${court.id}_${timeIdx}`;
+          const rawStatus = dayData[slotKey] || 'available';
 
-          COURTS.forEach(court => {
-            const courtCol = document.createElement('div');
-            courtCol.className = "col-span-1 flex justify-center";
+          let statusType = 'available';
+          let minutesLeft = 15;
 
-            const slotKey = `${court.id}_${timeIdx}`;
-            const rawStatus = dayData[slotKey] || 'available';
+          if (rawStatus === 'reserved') {
+            statusType = 'reserved';
+            reservedCount++;
+          } else if (typeof rawStatus === 'object' && rawStatus.status === 'pencil') {
+            statusType = 'pencil';
+            pencilCount++;
+            minutesLeft = Math.max(0, Math.ceil((rawStatus.expiresAt - Date.now()) / 60000));
+          } else {
+            availCount++;
+          }
 
-            let statusType = 'available';
-            let minutesLeft = 15;
+          const slotBtn = document.createElement('button');
+          slotBtn.className = `w-full max-w-[170px] py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-between shadow-sm ${
+            statusType === 'available' ? 'status-available hover:scale-[1.02]' :
+            statusType === 'pencil' ? 'status-pencil' : 'status-reserved'
+          }`;
 
-            if (rawStatus === 'reserved') {
-              statusType = 'reserved';
-              reservedCount++;
-            } else if (typeof rawStatus === 'object' && rawStatus.status === 'pencil') {
-              statusType = 'pencil';
-              pencilCount++;
-              minutesLeft = Math.max(0, Math.ceil((rawStatus.expiresAt - Date.now()) / 60000));
-            } else {
-              availCount++;
-            }
+          const isCustomerSelected = customerSelections.some(s => s.dateKey === dateKey && s.slotKey === slotKey);
+          if (isCustomerSelected) {
+            slotBtn.classList.add('ring-2', 'ring-lime-400');
+          }
 
-            const slotBtn = document.createElement('button');
-            slotBtn.className = `w-full max-w-[170px] py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-between shadow-sm ${
-              statusType === 'available' ? 'status-available hover:scale-[1.02]' :
-              statusType === 'pencil' ? 'status-pencil' : 'status-reserved'
-            }`;
+          let labelHtml = '';
+          if (statusType === 'available') {
+            labelHtml = `<i class="fa-solid fa-circle-check text-lime-400"></i> Available`;
+          } else if (statusType === 'pencil') {
+            labelHtml = `<i class="fa-solid fa-pencil text-amber-400"></i> Pencil (${minutesLeft}m)`;
+          } else {
+            labelHtml = `<i class="fa-solid fa-circle-xmark text-red-400"></i> Reserved`;
+          }
 
-            const isCustomerSelected = customerSelections.some(s => s.dateKey === dateKey && s.slotKey === slotKey);
-            if (isCustomerSelected) {
-              slotBtn.classList.add('ring-2', 'ring-lime-400');
-            }
+          slotBtn.innerHTML = `
+            <span class="flex items-center gap-1">${labelHtml}</span>
+            <span class="opacity-75 text-[10px]">₱${court.price}</span>
+          `;
 
-            let labelHtml = '';
-            if (statusType === 'available') {
-              labelHtml = `<i class="fa-solid fa-circle-check text-lime-400"></i> Available`;
-            } else if (statusType === 'pencil') {
-              labelHtml = `<i class="fa-solid fa-pencil text-amber-400"></i> Pencil (${minutesLeft}m)`;
-            } else {
-              labelHtml = `<i class="fa-solid fa-circle-xmark text-red-400"></i> Reserved`;
-            }
+          slotBtn.onclick = () => handleSlotClick(dateKey, slotKey, court, timeSlot, statusType);
 
-            slotBtn.innerHTML = `
-              <span class="flex items-center gap-1">${labelHtml}</span>
-              <span class="opacity-75 text-[10px]">₱${court.price}</span>
-            `;
-
-            slotBtn.onclick = () => handleSlotClick(dateKey, slotKey, court, timeSlot, statusType);
-
-            courtCol.appendChild(slotBtn);
-            row.appendChild(courtCol);
-          });
-
-          grid.appendChild(row);
+          courtCol.appendChild(slotBtn);
+          row.appendChild(courtCol);
         });
 
-      } else {
-        // --- WEEKLY SUMMARY MATRIX VIEW (SUN - SAT) ---
-        header.className = "grid grid-cols-8 gap-2 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider";
-        
-        const startOfWeek = new Date(selectedDate);
-        startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
-
-        const weekDays = [];
-        for (let i = 0; i < 7; i++) {
-          const d = new Date(startOfWeek);
-          d.setDate(startOfWeek.getDate() + i);
-          weekDays.push(d);
-        }
-
-        let headerHtml = `<div class="col-span-1">Timeslot</div>`;
-        weekDays.forEach(wd => {
-          const dayName = wd.toLocaleDateString('en-US', { weekday: 'short' });
-          headerHtml += `<div class="col-span-1 text-center">${dayName}<br/><span class="text-[10px] text-lime-400">${wd.getDate()}</span></div>`;
-        });
-        header.innerHTML = headerHtml;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
-          const row = document.createElement('div');
-          row.className = "grid grid-cols-8 gap-2 py-2.5 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
-
-          const timeCol = document.createElement('div');
-          timeCol.className = "col-span-1 font-bold text-slate-200 text-[11px] truncate";
-          timeCol.innerText = timeSlot.split(' - ')[0]; // Show start time for space efficiency
-          row.appendChild(timeCol);
-
-          weekDays.forEach(wd => {
-            wd.setHours(0, 0, 0, 0);
-            const dKey = getDateKey(wd);
-            const isPast = wd.getTime() < today.getTime();
-            const dayData = db[dKey] || {};
-
-            // Default to Main Court status summary for that hour, or count available across courts
-            const slotKey = `main_${timeIdx}`; // Representing main court status or overall summary
-            const rawStatus = dayData[slotKey] || 'available';
-
-            if (rawStatus === 'reserved') reservedCount++;
-            else if (typeof rawStatus === 'object' && rawStatus.status === 'pencil') pencilCount++;
-            else availCount++;
-
-            const dayCellCol = document.createElement('div');
-            dayCellCol.className = "col-span-1 flex justify-center";
-
-            const cellBtn = document.createElement('button');
-            if (isPast) {
-              cellBtn.className = "w-full py-1.5 rounded-lg bg-slate-950 text-slate-600 text-[10px] cursor-not-allowed opacity-30 border border-slate-900";
-              cellBtn.disabled = true;
-              cellBtn.innerText = "Past";
-            } else {
-              let badgeClass = "status-available";
-              let badgeText = "Avail";
-              if (rawStatus === 'reserved') {
-                badgeClass = "status-reserved";
-                badgeText = "Res";
-              } else if (typeof rawStatus === 'object' && rawStatus.status === 'pencil') {
-                badgeClass = "status-pencil";
-                badgeText = "Pencil";
-              }
-
-              cellBtn.className = `w-full py-1.5 px-1 rounded-lg text-[10px] font-bold transition ${badgeClass} hover:opacity-80`;
-              cellBtn.innerText = badgeText;
-              cellBtn.title = `${wd.toLocaleDateString()} ${timeSlot} - Main Court: ${badgeText}`;
-
-              // Clicking weekly cell jumps to that date in Day View for booking
-              cellBtn.onclick = () => {
-                selectedDate = new Date(wd);
-                switchCalendarView('month');
-                updateSelectedDateDisplay();
-                renderCalendar();
-                renderScheduleGrid();
-              };
-            }
-
-            dayCellCol.appendChild(cellBtn);
-            row.appendChild(dayCellCol);
-          });
-
-          grid.appendChild(row);
-        });
-      }
+        grid.appendChild(row);
+      });
 
       document.getElementById('statAvailable').innerText = availCount;
       document.getElementById('statPencil').innerText = pencilCount;
