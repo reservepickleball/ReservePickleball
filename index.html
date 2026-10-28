@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>re:serve pickleball court | Court Rental & Schedule</title>
+  <title>re:Serve pickleball court | Court Rental & Schedule</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>
@@ -17,7 +17,8 @@
               dark: '#0f172a',
               card: '#1e293b',
               accent: '#22c55e',
-              reserved: '#ef4444'
+              reserved: '#ef4444',
+              pencil: '#f59e0b'
             }
           }
         }
@@ -40,6 +41,11 @@
       border: 1px solid rgba(239, 68, 68, 0.4);
       color: #fca5a5;
     }
+    .status-pencil {
+      background-color: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
     .cal-day-active {
       background-color: #a3e635 !important;
       color: #0f172a !important;
@@ -49,29 +55,48 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased pb-12">
 
-  <!-- TOP HEADER NAV -->
+  <!-- TOP HEADER NAV WITH HAMBURGER MENU -->
   <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      
+      <!-- LOGO & TITLE -->
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-lime-400 to-emerald-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-lime-500/20">
           rS
         </div>
         <div>
           <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
-            re:serve <span class="text-lime-400 text-sm font-semibold uppercase tracking-wider bg-lime-400/10 px-2 py-0.5 rounded-full border border-lime-400/20">Pickleball Court</span>
+            re:Serve <span class="text-lime-400 text-sm font-semibold uppercase tracking-wider bg-lime-400/10 px-2 py-0.5 rounded-full border border-lime-400/20">Pickleball Court</span>
           </h1>
-          <p class="text-xs text-slate-400">Court Booking & Real-Time Availability</p>
+          <p class="text-xs text-slate-400">Court Booking & Real-Time Schedule</p>
         </div>
       </div>
 
-      <!-- ADMIN / USER TOGGLE BUTTON -->
+      <!-- DESKTOP RIGHT ACTIONS & HAMBURGER TOGGLE -->
       <div class="flex items-center gap-3">
-        <div id="modeBadge" class="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700 flex items-center gap-1.5">
+        <div id="modeBadge" class="hidden sm:flex text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700 items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-          <span>Customer (Read-Only)</span>
+          <span>Customer View</span>
         </div>
-        <button id="adminAuthBtn" onclick="openAdminModal()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-2">
-          <i class="fa-solid font-bold fa-lock text-lime-400"></i>
+
+        <!-- HAMBURGER BUTTON -->
+        <button onclick="toggleBurgerMenu()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition focus:outline-none">
+          <i class="fa-solid fa-bars text-lg" id="burgerIcon"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- HAMBURGER DROPDOWN MENU -->
+    <div id="burgerDropdown" class="hidden bg-slate-900 border-b border-slate-800 px-4 py-3 space-y-3 transition-all">
+      <div class="flex items-center justify-between py-1 border-b border-slate-800">
+        <span class="text-xs text-slate-400">System Mode:</span>
+        <span id="burgerModeBadge" class="text-xs font-bold text-lime-400">Customer (Read-Only)</span>
+      </div>
+
+      <!-- HIDDEN ADMIN ACCESS BUTTON -->
+      <div class="pt-1">
+        <button id="adminAuthBtn" onclick="openAdminModal(); toggleBurgerMenu();" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-lock text-lime-400"></i>
           <span id="adminBtnText">Admin Access</span>
         </button>
       </div>
@@ -83,12 +108,12 @@
 
     <!-- COURT INFO CARDS BANNER -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <!-- Main Court Card -->
+      <!-- Standard Main Court Card -->
       <div class="glass-card rounded-2xl p-4 border-l-4 border-lime-400 relative overflow-hidden">
         <div class="flex justify-between items-start">
           <div>
             <span class="text-xs font-bold text-lime-400 uppercase tracking-widest">Main Court</span>
-            <h3 class="text-lg font-bold text-white mt-0.5">Court 1 (Full Size)</h3>
+            <h3 class="text-lg font-bold text-white mt-0.5">Standard Main Court</h3>
           </div>
           <span class="text-xs bg-lime-400/20 text-lime-300 px-2.5 py-1 rounded-full font-bold border border-lime-400/30">
             ₱600 / hr
@@ -99,12 +124,14 @@
         </p>
       </div>
 
-      <!-- Training Range 1 -->
+      <!-- Airconditioned Training Range 1 -->
       <div class="glass-card rounded-2xl p-4 border-l-4 border-emerald-400 relative overflow-hidden">
         <div class="flex justify-between items-start">
           <div>
-            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Training Range 1</span>
-            <h3 class="text-lg font-bold text-white mt-0.5">Range A (With Machine)</h3>
+            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+              <i class="fa-solid fa-snowflake"></i> Airconditioned Range 1
+            </span>
+            <h3 class="text-lg font-bold text-white mt-0.5">Range 1 (Machine + Balls)</h3>
           </div>
           <span class="text-xs bg-emerald-400/20 text-emerald-300 px-2.5 py-1 rounded-full font-bold border border-emerald-400/30">
             ₱400 / hr
@@ -113,14 +140,19 @@
         <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
           <i class="fa-solid fa-user-group text-emerald-400"></i> Up to <strong>4 Players</strong> only
         </p>
+        <p class="text-[11px] text-emerald-300/80 mt-1">
+          <i class="fa-solid fa-check text-xs"></i> Includes Ball Machine & Training Balls
+        </p>
       </div>
 
-      <!-- Training Range 2 -->
+      <!-- Airconditioned Training Range 2 -->
       <div class="glass-card rounded-2xl p-4 border-l-4 border-emerald-400 relative overflow-hidden">
         <div class="flex justify-between items-start">
           <div>
-            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Training Range 2</span>
-            <h3 class="text-lg font-bold text-white mt-0.5">Range B (With Machine)</h3>
+            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+              <i class="fa-solid fa-snowflake"></i> Airconditioned Range 2
+            </span>
+            <h3 class="text-lg font-bold text-white mt-0.5">Range 2 (Machine + Balls)</h3>
           </div>
           <span class="text-xs bg-emerald-400/20 text-emerald-300 px-2.5 py-1 rounded-full font-bold border border-emerald-400/30">
             ₱400 / hr
@@ -128,19 +160,22 @@
         </div>
         <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
           <i class="fa-solid fa-user-group text-emerald-400"></i> Up to <strong>4 Players</strong> only
+        </p>
+        <p class="text-[11px] text-emerald-300/80 mt-1">
+          <i class="fa-solid fa-check text-xs"></i> Includes Ball Machine & Training Balls
         </p>
       </div>
     </div>
 
-    <!-- CALENDAR SELECTOR SECTION (MONTHLY & WEEKLY VIEWS) -->
+    <!-- CALENDAR SELECTOR SECTION -->
     <div class="glass-card rounded-2xl p-5 border border-slate-800 shadow-xl space-y-4">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-800">
         <div>
           <h2 class="text-base font-bold text-white flex items-center gap-2">
             <i class="fa-solid fa-calendar-days text-lime-400"></i>
-            Select Date & Schedule View
+            Select Present or Future Date
           </h2>
-          <p class="text-xs text-slate-400">Choose a date to view hourly timeslot availability (9:00 AM – 12:00 AM)</p>
+          <p class="text-xs text-slate-400">Past dates are disabled. Choose today or future dates to view or book timeslots.</p>
         </div>
 
         <!-- View Switcher (Monthly vs Weekly) -->
@@ -160,15 +195,12 @@
           <button onclick="changeMonth(-1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
             <i class="fa-solid fa-chevron-left"></i> Prev Month
           </button>
-          <h3 id="currentMonthYearLabel" class="text-sm font-bold text-lime-400 tracking-wide uppercase">
-            <!-- Dynamic Month Year -->
-          </h3>
+          <h3 id="currentMonthYearLabel" class="text-sm font-bold text-lime-400 tracking-wide uppercase"></h3>
           <button onclick="changeMonth(1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
             Next Month <i class="fa-solid fa-chevron-right"></i>
           </button>
         </div>
 
-        <!-- Calendar Month Grid -->
         <div class="grid grid-cols-7 gap-1.5 text-center text-xs">
           <div class="text-slate-500 font-bold py-1">Sun</div>
           <div class="text-slate-500 font-bold py-1">Mon</div>
@@ -178,12 +210,10 @@
           <div class="text-slate-500 font-bold py-1">Fri</div>
           <div class="text-slate-500 font-bold py-1">Sat</div>
         </div>
-        <div id="monthGrid" class="grid grid-cols-7 gap-1.5 text-xs">
-          <!-- Days populated dynamically -->
-        </div>
+        <div id="monthGrid" class="grid grid-cols-7 gap-1.5 text-xs"></div>
       </div>
 
-      <!-- WEEK CALENDAR CONTAINER (Hidden by default) -->
+      <!-- WEEK CALENDAR CONTAINER WITH DAILY OCCUPANCY INDICATORS -->
       <div id="weekCalendarContainer" class="hidden space-y-3">
         <div class="flex items-center justify-between px-1">
           <button onclick="changeWeek(-1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
@@ -194,12 +224,11 @@
             Next Week <i class="fa-solid fa-chevron-right"></i>
           </button>
         </div>
-        <div id="weekGrid" class="grid grid-cols-7 gap-2">
-          <!-- 7 days populated dynamically -->
-        </div>
+
+        <div id="weekGrid" class="grid grid-cols-1 sm:grid-cols-7 gap-2"></div>
       </div>
 
-      <!-- Selected Date Banner & Admin Bulk Actions -->
+      <!-- Selected Date Banner & Stats -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800/80">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-clock text-lime-400 text-lg"></i>
@@ -210,16 +239,19 @@
         </div>
 
         <!-- STATS BAR -->
-        <div class="flex items-center gap-3 text-xs">
-          <div class="px-2.5 py-1 rounded-lg bg-lime-400/10 border border-lime-400/20 text-lime-400">
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <div class="px-2 py-0.5 rounded-lg bg-lime-400/10 border border-lime-400/20 text-lime-400">
             <span class="font-bold" id="statAvailable">0</span> Available
           </div>
-          <div class="px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
+          <div class="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <span class="font-bold" id="statPencil">0</span> Pencil Booked
+          </div>
+          <div class="px-2 py-0.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
             <span class="font-bold" id="statReserved">0</span> Reserved
           </div>
         </div>
 
-        <!-- Admin Bulk Controls (Shown only in Admin Mode) -->
+        <!-- Admin Bulk Controls -->
         <div id="adminControls" class="hidden flex items-center gap-2">
           <button onclick="bulkSetStatus('available')" class="px-2.5 py-1.5 bg-lime-500/20 hover:bg-lime-500/30 text-lime-300 text-xs font-bold rounded-lg border border-lime-500/30 transition">
             Mark All Available
@@ -231,28 +263,26 @@
       </div>
     </div>
 
-    <!-- SCHEDULE MATRIX TABLE / GRID -->
+    <!-- SCHEDULE MATRIX TABLE -->
     <div class="glass-card rounded-2xl p-5 border border-slate-800 shadow-xl overflow-x-auto">
       <div class="min-w-[700px]">
         <!-- Table Header -->
         <div class="grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider">
           <div class="col-span-1">Timeslot (9 AM - 12 AM)</div>
-          <div class="col-span-1 text-center">Main Court (₱600/hr)</div>
-          <div class="col-span-1 text-center">Training Range 1 (₱400/hr)</div>
-          <div class="col-span-1 text-center">Training Range 2 (₱400/hr)</div>
+          <div class="col-span-1 text-center">Standard Main Court (₱600/hr)</div>
+          <div class="col-span-1 text-center">AC Range 1 + Machine (₱400/hr)</div>
+          <div class="col-span-1 text-center">AC Range 2 + Machine (₱400/hr)</div>
         </div>
 
         <!-- Timeslots Container -->
-        <div id="scheduleGrid" class="divide-y divide-slate-800/60 text-sm">
-          <!-- Dynamic Timeslot Rows populated here -->
-        </div>
+        <div id="scheduleGrid" class="divide-y divide-slate-800/60 text-sm"></div>
       </div>
     </div>
 
     <!-- PAYMENT & DIRECT MESSENGER BOOKING SECTION -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       
-      <!-- GCash Payment Info Card (Number only, no QR) -->
+      <!-- GCash Payment Info Card -->
       <div class="glass-card rounded-2xl p-6 border border-slate-800 space-y-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -283,7 +313,7 @@
 
         <p class="text-xs text-slate-400 flex items-start gap-2">
           <i class="fa-solid fa-circle-info text-lime-400 mt-0.5"></i>
-          <span>Send GCash payment confirmation screenshot directly via Facebook Messenger to finalize your slot reservation.</span>
+          <span>Submitting booking pencil-books your selected slots for <strong>15 minutes</strong>. Send payment proof to Messenger to finalize!</span>
         </p>
       </div>
 
@@ -292,11 +322,11 @@
         <div>
           <div class="flex items-center gap-2 text-lime-400 text-sm font-bold mb-1">
             <i class="fa-brands fa-facebook-messenger text-base"></i>
-            Direct Messenger Reservation
+            Automatic Messenger Booking
           </div>
-          <h3 class="text-lg font-bold text-white">Submit Booking to Owner</h3>
+          <h3 class="text-lg font-bold text-white">Submit booking</h3>
           <p class="text-xs text-slate-400 mt-1">
-            Click available timeslots on the table above to add them to your inquiry summary, then click below to send directly to our Messenger page!
+            Click available timeslots above, then click below. Selected slots will be pencil booked for <strong>15 minutes</strong> automatically!
           </p>
 
           <div id="selectedSlotsSummary" class="mt-4 p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-2 min-h-[90px]">
@@ -307,7 +337,7 @@
         <div class="pt-2">
           <button onclick="sendToMessenger()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2">
             <i class="fa-brands fa-facebook-messenger text-lg"></i>
-            Send Booking to Facebook Messenger
+            Submit booking
           </button>
         </div>
       </div>
@@ -346,9 +376,9 @@
   <!-- JAVASCRIPT LOGIC -->
   <script>
     // CONSTANTS & CONFIG
-    const ADMIN_PIN = "113322"; // Updated PIN
-    const MESSENGER_URL = "https://www.facebook.com/profile.php?id=61595264373061";
-    const DIRECT_MSG_LINK = "https://m.me/61595264373061";
+    const ADMIN_PIN = "113322";
+    const FB_PAGE_ID = "61595264373061";
+    const PENCIL_DURATION_MS = 15 * 60 * 1000; // 15 Minutes
 
     const OPERATING_HOURS = [
       "09:00 AM - 10:00 AM",
@@ -369,29 +399,38 @@
     ];
 
     const COURTS = [
-      { id: "main", name: "Main Court", price: 600, limit: "Up to 8 Players" },
-      { id: "range1", name: "Training Range 1", price: 400, limit: "Up to 4 Players" },
-      { id: "range2", name: "Training Range 2", price: 400, limit: "Up to 4 Players" }
+      { id: "main", name: "Standard Main Court", price: 600, limit: "Up to 8 Players" },
+      { id: "range1", name: "Airconditioned Range 1 (Machine + Balls)", price: 400, limit: "Up to 4 Players" },
+      { id: "range2", name: "Airconditioned Range 2 (Machine + Balls)", price: 400, limit: "Up to 4 Players" }
     ];
 
     // APPLICATION STATE
     let isAdmin = false;
-    let selectedDate = new Date(); // Currently selected date object
-    let calendarView = 'month'; // 'month' or 'week'
-    let displayedMonthDate = new Date(); // Date reference for month grid view
-    let customerSelections = []; // Holds user selected inquiry slots
+    let selectedDate = new Date();
+    let calendarView = 'month';
+    let displayedMonthDate = new Date();
+    let customerSelections = [];
 
-    // STORAGE KEY
     const LOCAL_STORAGE_KEY = "reserve_pickleball_schedule_db_v2";
 
-    // INITIALIZATION
+    // INITIALIZATION & TIMER CHECK
     window.addEventListener("DOMContentLoaded", () => {
+      // Normalize selectedDate to midnight for correct date comparison
+      selectedDate.setHours(0, 0, 0, 0);
+
+      cleanExpiredPencilBookings();
+      setInterval(cleanExpiredPencilBookings, 10000);
+
       renderCalendar();
       updateSelectedDateDisplay();
       renderScheduleGrid();
     });
 
-    // LOCAL STORAGE DB HELPERS
+    function toggleBurgerMenu() {
+      const dropdown = document.getElementById('burgerDropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
     function getStoredData() {
       const data = localStorage.getItem(LOCAL_STORAGE_KEY);
       return data ? JSON.parse(data) : {};
@@ -408,7 +447,30 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    // CALENDAR LOGIC & SWITCHING
+    function cleanExpiredPencilBookings() {
+      const db = getStoredData();
+      const now = Date.now();
+      let updated = false;
+
+      Object.keys(db).forEach(dateKey => {
+        Object.keys(db[dateKey]).forEach(slotKey => {
+          const val = db[dateKey][slotKey];
+          if (typeof val === 'object' && val.status === 'pencil') {
+            if (now > val.expiresAt) {
+              delete db[dateKey][slotKey];
+              updated = true;
+            }
+          }
+        });
+      });
+
+      if (updated) {
+        saveStoredData(db);
+        renderScheduleGrid();
+        renderCalendar();
+      }
+    }
+
     function switchCalendarView(view) {
       calendarView = view;
       const monthBtn = document.getElementById('viewMonthBtn');
@@ -438,7 +500,7 @@
       }
     }
 
-    // MONTH CALENDAR GENERATOR
+    // MONTH CALENDAR (RESTRICTING PAST DATES)
     function renderMonthCalendar() {
       const monthGrid = document.getElementById('monthGrid');
       const monthLabel = document.getElementById('currentMonthYearLabel');
@@ -453,40 +515,52 @@
       const firstDayIndex = new Date(year, month, 1).getDay();
       const totalDays = new Date(year, month + 1, 0).getDate();
 
-      // Empty lead slots
       for (let i = 0; i < firstDayIndex; i++) {
         const empty = document.createElement('div');
         empty.className = "h-9 rounded-lg bg-slate-900/40 opacity-20";
         monthGrid.appendChild(empty);
       }
 
-      // Day cells
       const selectedKey = getDateKey(selectedDate);
-      const todayKey = getDateKey(new Date());
+      
+      // Today normalized to midnight for accurate comparison
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
       for (let day = 1; day <= totalDays; day++) {
         const cellDate = new Date(year, month, day);
+        cellDate.setHours(0, 0, 0, 0);
+
         const cellKey = getDateKey(cellDate);
         const isSelected = cellKey === selectedKey;
-        const isToday = cellKey === todayKey;
+        const isToday = cellDate.getTime() === today.getTime();
+        const isPast = cellDate.getTime() < today.getTime();
 
         const dayBtn = document.createElement('button');
-        dayBtn.className = `h-9 rounded-lg border transition text-xs font-semibold flex flex-col items-center justify-center relative ${
-          isSelected 
-            ? 'cal-day-active border-lime-400 shadow-lg shadow-lime-400/20' 
-            : isToday 
-              ? 'bg-slate-800 text-lime-400 border-lime-400/50' 
-              : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
-        }`;
+
+        if (isPast) {
+          // Disabled Style for Past Dates
+          dayBtn.className = "h-9 rounded-lg border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 flex flex-col items-center justify-center";
+          dayBtn.disabled = true;
+        } else {
+          // Active Style for Present & Future Dates
+          dayBtn.className = `h-9 rounded-lg border transition text-xs font-semibold flex flex-col items-center justify-center relative ${
+            isSelected 
+              ? 'cal-day-active border-lime-400 shadow-lg shadow-lime-400/20' 
+              : isToday 
+                ? 'bg-slate-800 text-lime-400 border-lime-400/50' 
+                : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+          }`;
+
+          dayBtn.onclick = () => {
+            selectedDate = cellDate;
+            updateSelectedDateDisplay();
+            renderCalendar();
+            renderScheduleGrid();
+          };
+        }
 
         dayBtn.innerText = day;
-        dayBtn.onclick = () => {
-          selectedDate = cellDate;
-          updateSelectedDateDisplay();
-          renderCalendar();
-          renderScheduleGrid();
-        };
-
         monthGrid.appendChild(dayBtn);
       }
     }
@@ -496,13 +570,12 @@
       renderMonthCalendar();
     }
 
-    // WEEK CALENDAR GENERATOR
+    // WEEK CALENDAR (RESTRICTING PAST DATES)
     function renderWeekCalendar() {
       const weekGrid = document.getElementById('weekGrid');
       const weekLabel = document.getElementById('currentWeekRangeLabel');
       weekGrid.innerHTML = "";
 
-      // Compute start of week (Sunday) for selectedDate
       const startOfWeek = new Date(selectedDate);
       startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
 
@@ -512,40 +585,76 @@
       weekLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
       const selectedKey = getDateKey(selectedDate);
-      const todayKey = getDateKey(new Date());
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const db = getStoredData();
+      const totalPossibleSlots = OPERATING_HOURS.length * COURTS.length;
 
       for (let i = 0; i < 7; i++) {
         const dayDate = new Date(startOfWeek);
         dayDate.setDate(startOfWeek.getDate() + i);
+        dayDate.setHours(0, 0, 0, 0);
 
         const dayKey = getDateKey(dayDate);
         const isSelected = dayKey === selectedKey;
-        const isToday = dayKey === todayKey;
+        const isToday = dayDate.getTime() === today.getTime();
+        const isPast = dayDate.getTime() < today.getTime();
+
+        const dayData = db[dayKey] || {};
+        let occupiedSlots = 0;
+
+        Object.keys(dayData).forEach(k => {
+          const val = dayData[k];
+          if (val === 'reserved' || (typeof val === 'object' && val.status === 'pencil')) {
+            occupiedSlots++;
+          }
+        });
 
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const occupancyPercentage = Math.round((occupiedSlots / totalPossibleSlots) * 100);
 
-        const dayBtn = document.createElement('button');
-        dayBtn.className = `p-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
-          isSelected 
-            ? 'cal-day-active border-lime-400 shadow-md' 
-            : isToday 
-              ? 'bg-slate-800 text-lime-400 border-lime-400/50' 
-              : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-        }`;
+        const dayCard = document.createElement('button');
 
-        dayBtn.innerHTML = `
-          <span class="text-[10px] uppercase font-bold opacity-75">${dayNames[i]}</span>
-          <span class="text-sm font-extrabold mt-0.5">${dayDate.getDate()}</span>
+        if (isPast) {
+          dayCard.className = "p-3 rounded-xl border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 text-left flex flex-col justify-between";
+          dayCard.disabled = true;
+        } else {
+          dayCard.className = `p-3 rounded-xl border transition text-left flex flex-col justify-between ${
+            isSelected 
+              ? 'cal-day-active border-lime-400 shadow-md' 
+              : isToday 
+                ? 'bg-slate-800 text-lime-400 border-lime-400/50' 
+                : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
+          }`;
+
+          dayCard.onclick = () => {
+            selectedDate = dayDate;
+            updateSelectedDateDisplay();
+            renderCalendar();
+            renderScheduleGrid();
+          };
+        }
+
+        dayCard.innerHTML = `
+          <div class="flex justify-between items-center w-full">
+            <span class="text-[10px] uppercase font-bold opacity-75">${dayNames[i]}</span>
+            <span class="text-xs font-black">${dayDate.getDate()}</span>
+          </div>
+          
+          <div class="mt-2 space-y-1 w-full">
+            <div class="flex justify-between text-[10px] font-semibold">
+              <span>Booked:</span>
+              <span class="${occupiedSlots > 30 ? 'text-red-400 font-bold' : 'opacity-90'}">${occupiedSlots} / ${totalPossibleSlots}</span>
+            </div>
+            <div class="w-full bg-slate-950/40 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-amber-400 h-1.5 rounded-full" style="width: ${occupancyPercentage}%"></div>
+            </div>
+          </div>
         `;
 
-        dayBtn.onclick = () => {
-          selectedDate = dayDate;
-          updateSelectedDateDisplay();
-          renderCalendar();
-          renderScheduleGrid();
-        };
-
-        weekGrid.appendChild(dayBtn);
+        weekGrid.appendChild(dayCard);
       }
     }
 
@@ -562,7 +671,6 @@
       document.getElementById('selectedDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
     }
 
-    // RENDER MAIN SCHEDULE MATRIX GRID
     function renderScheduleGrid() {
       const grid = document.getElementById('scheduleGrid');
       grid.innerHTML = "";
@@ -573,49 +681,64 @@
 
       let availCount = 0;
       let reservedCount = 0;
+      let pencilCount = 0;
 
       OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
         const row = document.createElement('div');
         row.className = "grid grid-cols-4 gap-3 py-3 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
 
-        // Time Label Column
         const timeCol = document.createElement('div');
         timeCol.className = "col-span-1 font-bold text-slate-200 text-xs flex items-center gap-1.5";
         timeCol.innerHTML = `<i class="fa-regular fa-clock text-lime-400"></i> ${timeSlot}`;
         row.appendChild(timeCol);
 
-        // Court Columns (Main, Range 1, Range 2)
         COURTS.forEach(court => {
           const courtCol = document.createElement('div');
           courtCol.className = "col-span-1 flex justify-center";
 
           const slotKey = `${court.id}_${timeIdx}`;
-          // Default status is 'available'
-          const currentStatus = dayData[slotKey] || 'available';
+          const rawStatus = dayData[slotKey] || 'available';
 
-          if (currentStatus === 'available') availCount++;
-          if (currentStatus === 'reserved') reservedCount++;
+          let statusType = 'available';
+          let minutesLeft = 15;
+
+          if (rawStatus === 'reserved') {
+            statusType = 'reserved';
+            reservedCount++;
+          } else if (typeof rawStatus === 'object' && rawStatus.status === 'pencil') {
+            statusType = 'pencil';
+            pencilCount++;
+            minutesLeft = Math.max(0, Math.ceil((rawStatus.expiresAt - Date.now()) / 60000));
+          } else {
+            availCount++;
+          }
 
           const slotBtn = document.createElement('button');
           slotBtn.className = `w-full max-w-[170px] py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-between shadow-sm ${
-            currentStatus === 'available' ? 'status-available hover:scale-[1.02]' : 'status-reserved'
+            statusType === 'available' ? 'status-available hover:scale-[1.02]' :
+            statusType === 'pencil' ? 'status-pencil' : 'status-reserved'
           }`;
 
-          // Check if selected by customer inquiry
           const isCustomerSelected = customerSelections.some(s => s.dateKey === dateKey && s.slotKey === slotKey);
           if (isCustomerSelected) {
             slotBtn.classList.add('ring-2', 'ring-lime-400');
           }
 
+          let labelHtml = '';
+          if (statusType === 'available') {
+            labelHtml = `<i class="fa-solid fa-circle-check text-lime-400"></i> Available`;
+          } else if (statusType === 'pencil') {
+            labelHtml = `<i class="fa-solid fa-pencil text-amber-400"></i> Pencil (${minutesLeft}m)`;
+          } else {
+            labelHtml = `<i class="fa-solid fa-circle-xmark text-red-400"></i> Reserved`;
+          }
+
           slotBtn.innerHTML = `
-            <span class="flex items-center gap-1">
-              <i class="fa-solid ${currentStatus === 'available' ? 'fa-circle-check text-lime-400' : 'fa-circle-xmark text-red-400'}"></i>
-              ${currentStatus === 'available' ? 'Available' : 'Reserved'}
-            </span>
+            <span class="flex items-center gap-1">${labelHtml}</span>
             <span class="opacity-75 text-[10px]">₱${court.price}</span>
           `;
 
-          slotBtn.onclick = () => handleSlotClick(dateKey, slotKey, court, timeSlot, currentStatus);
+          slotBtn.onclick = () => handleSlotClick(dateKey, slotKey, court, timeSlot, statusType);
 
           courtCol.appendChild(slotBtn);
           row.appendChild(courtCol);
@@ -624,27 +747,29 @@
         grid.appendChild(row);
       });
 
-      // Update Header Stats
       document.getElementById('statAvailable').innerText = availCount;
+      document.getElementById('statPencil').innerText = pencilCount;
       document.getElementById('statReserved').innerText = reservedCount;
     }
 
-    // SLOT CLICK HANDLER (ADMIN TOGGLE vs CUSTOMER SELECTION)
-    function handleSlotClick(dateKey, slotKey, court, timeSlot, currentStatus) {
+    function handleSlotClick(dateKey, slotKey, court, timeSlot, statusType) {
       if (isAdmin) {
-        // ADMIN MODE: Toggle between 'available' and 'reserved' only
         const db = getStoredData();
         if (!db[dateKey]) db[dateKey] = {};
 
-        const newStatus = currentStatus === 'available' ? 'reserved' : 'available';
+        const newStatus = statusType === 'available' ? 'reserved' : 'available';
         db[dateKey][slotKey] = newStatus;
 
         saveStoredData(db);
         renderScheduleGrid();
+        renderCalendar();
       } else {
-        // CUSTOMER READ-ONLY MODE: Toggle inquiry selection if available
-        if (currentStatus === 'reserved') {
-          alert("This slot is already reserved. Please choose an available slot!");
+        if (statusType === 'reserved') {
+          alert("This slot is already reserved.");
+          return;
+        }
+        if (statusType === 'pencil') {
+          alert("This slot is temporarily pencil booked for 15 minutes by another user.");
           return;
         }
 
@@ -668,7 +793,6 @@
       }
     }
 
-    // UPDATE CUSTOMER BOOKING INQUIRY SUMMARY
     function updateCustomerSummary() {
       const container = document.getElementById('selectedSlotsSummary');
       
@@ -700,7 +824,6 @@
       container.innerHTML = html;
     }
 
-    // ADMIN BULK ACTION (AVAILABLE / RESERVED)
     function bulkSetStatus(status) {
       if (!isAdmin) return;
       const db = getStoredData();
@@ -716,18 +839,14 @@
 
       saveStoredData(db);
       renderScheduleGrid();
+      renderCalendar();
     }
 
-    // ADMIN MODAL & AUTHENTICATION
     function openAdminModal() {
       if (isAdmin) {
-        // Logout Admin
         isAdmin = false;
         document.getElementById('adminBtnText').innerText = "Admin Access";
-        document.getElementById('modeBadge').innerHTML = `
-          <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-          <span>Customer (Read-Only)</span>
-        `;
+        document.getElementById('burgerModeBadge').innerText = "Customer (Read-Only)";
         document.getElementById('adminControls').classList.add('hidden');
         renderScheduleGrid();
         return;
@@ -748,11 +867,8 @@
       if (pin === ADMIN_PIN) {
         isAdmin = true;
         closeAdminModal();
-        document.getElementById('adminBtnText').innerText = "Exit Admin";
-        document.getElementById('modeBadge').innerHTML = `
-          <span class="w-2 h-2 rounded-full bg-lime-400 animate-pulse"></span>
-          <span class="text-lime-400 font-bold">Admin Mode Active</span>
-        `;
+        document.getElementById('adminBtnText').innerText = "Exit Admin Mode";
+        document.getElementById('burgerModeBadge').innerText = "Admin Mode Active";
         document.getElementById('adminControls').classList.remove('hidden');
         renderScheduleGrid();
       } else {
@@ -760,7 +876,6 @@
       }
     }
 
-    // COPY GCASH NUMBER
     function copyGcashNumber() {
       navigator.clipboard.writeText("09178250508");
       const copyBtnText = document.getElementById('copyBtnText');
@@ -770,27 +885,46 @@
       }, 2000);
     }
 
-    // SEND TO FACEBOOK MESSENGER
     function sendToMessenger() {
       if (customerSelections.length === 0) {
         alert("Please select at least one available court timeslot first!");
         return;
       }
 
-      let message = "Hi re:serve pickleball court! I would like to reserve the following slot(s):\n\n";
+      const db = getStoredData();
+      const expiresAt = Date.now() + PENCIL_DURATION_MS;
+
+      customerSelections.forEach(sel => {
+        if (!db[sel.dateKey]) db[sel.dateKey] = {};
+        db[sel.dateKey][sel.slotKey] = {
+          status: 'pencil',
+          expiresAt: expiresAt
+        };
+      });
+
+      saveStoredData(db);
+
+      let message = "Hi re:Serve pickleball court! I would like to book the following reservation:\n\n";
       let total = 0;
 
       customerSelections.forEach((sel, i) => {
-        message += `${i + 1}. ${sel.courtName}\n   Date: ${sel.dateDisplay}\n   Time: ${sel.timeSlot}\n   Fee: ₱${sel.price}\n\n`;
+        message += `${i + 1}. ${sel.courtName}\n   📅 Date: ${sel.dateDisplay}\n   ⏰ Time: ${sel.timeSlot}\n   ₱ Fee: ₱${sel.price}\n\n`;
         total += sel.price;
       });
 
-      message += `Total Fee: ₱${total}\n\nI will send my GCash payment screenshot next. Thank you!`;
+      message += `Total Fee: ₱${total}\n\nGCash Payment Number: 09178250508 (BR**N V.)\nI have pencil-booked these slots for 15 mins and will send my GCash proof shortly!`;
 
-      // Copy constructed text to clipboard for convenient pasting
       navigator.clipboard.writeText(message);
-      alert("Booking details copied to clipboard! Redirecting you to Facebook Messenger...");
-      window.open(DIRECT_MSG_LINK, '_blank');
+
+      customerSelections = [];
+      updateCustomerSummary();
+      renderScheduleGrid();
+      renderCalendar();
+
+      alert("Slots pencil booked for 15 minutes! Opening Facebook Messenger...");
+
+      const encodedMsg = encodeURIComponent(message);
+      window.open(`https://m.me/${FB_PAGE_ID}?text=${encodedMsg}`, '_blank');
     }
   </script>
 </body>
