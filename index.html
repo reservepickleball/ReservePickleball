@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smash & Spin Pickleball Club - Court & Range Rentals</title>
+    <title>re:serve pickleball court - Book Main Court & Training Ranges</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -18,8 +18,8 @@
                     colors: {
                         limeBrand: '#a3e635',
                         limeDark: '#65a30d',
+                        gcashBlue: '#005CE6',
                         courtBlue: '#0f172a',
-                        courtGreen: '#064e3b',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -29,7 +29,6 @@
         }
     </script>
     <style>
-        /* Custom scrollbar for schedule matrix */
         .custom-scrollbar::-webkit-scrollbar {
             height: 8px;
             width: 8px;
@@ -45,7 +44,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #a3e635;
         }
-        /* Touch ripples and smooth transitions */
         .slot-btn {
             transition: all 0.15s ease-in-out;
         }
@@ -56,54 +54,54 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between antialiased">
 
-    <!-- Top Mode Banner & Navigation Header -->
+    <!-- Header & Navigation -->
     <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
                 <!-- Brand Logo -->
                 <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-lime-500 to-emerald-400 flex items-center justify-center text-slate-950 font-extrabold text-2xl shadow-lg shadow-lime-500/20">
-                        <i class="fa-solid fa-[#000] fa-table-tennis-paddle-ball text-slate-950"></i>
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-lime-400 to-emerald-400 flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-lime-500/20">
+                        <i class="fa-solid fa-table-tennis-paddle-ball text-slate-950"></i>
                     </div>
                     <div>
-                        <span class="text-xl font-black tracking-tight text-white block">SMASH & SPIN</span>
-                        <span class="text-xs font-semibold tracking-wider text-lime-400 uppercase">Pickleball Club</span>
+                        <span class="text-xl font-black tracking-tight text-white block">re:serve</span>
+                        <span class="text-xs font-bold tracking-widest text-lime-400 uppercase">pickleball court</span>
                     </div>
                 </div>
 
-                <!-- Operating Hours & Fast Info -->
+                <!-- Operating Info -->
                 <div class="hidden lg:flex items-center space-x-6 text-sm text-slate-300">
                     <div class="flex items-center space-x-2 bg-slate-800/60 px-3.5 py-1.5 rounded-full border border-slate-700/50">
                         <i class="fa-regular fa-clock text-lime-400"></i>
                         <span>Operating Hours: <strong>9:00 AM - 12:00 AM</strong></span>
                     </div>
-                    <div class="flex items-center space-x-2 bg-slate-800/60 px-3.5 py-1.5 rounded-full border border-slate-700/50">
-                        <i class="fa-solid fa-[#000] fa-[#000] fa-map-pin text-lime-400"></i>
-                        <span>Metro Sports Complex</span>
-                    </div>
+                    <a href="https://www.facebook.com/profile.php?id=61595264373061" target="_blank" class="flex items-center space-x-2 bg-sky-600/20 text-sky-400 hover:bg-sky-600/30 px-3.5 py-1.5 rounded-full border border-sky-500/30 transition-all">
+                        <i class="fa-brands fa-facebook-messenger text-sky-400"></i>
+                        <span class="font-semibold text-xs">Official Messenger</span>
+                    </a>
                 </div>
 
-                <!-- Mode Switcher (Customer vs Admin) -->
+                <!-- Admin / Customer View Toggle -->
                 <div class="flex items-center space-x-3">
                     <div id="modeBadge" class="hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/30">
-                        <i class="fa-solid fa-[#000] fa-eye mr-1.5"></i> Read-Only View
+                        <i class="fa-solid fa-eye mr-1.5"></i> Read-Only Customer Mode
                     </div>
                     
                     <button id="toggleModeBtn" onclick="handleModeSwitchToggle()" class="relative inline-flex items-center justify-center px-4 py-2 text-xs sm:text-sm font-semibold text-slate-950 bg-lime-400 hover:bg-lime-300 rounded-xl transition-all shadow-md shadow-lime-500/20 active:scale-95">
-                        <i id="toggleModeIcon" class="fa-solid fa-[#000] fa-lock-open mr-2"></i>
-                        <span id="toggleModeText">Switch to Admin Mode</span>
+                        <i id="toggleModeIcon" class="fa-solid fa-lock-open mr-2"></i>
+                        <span id="toggleModeText">Owner Access</span>
                     </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Admin Status Banner (Visible only in Admin Mode) -->
+    <!-- Admin Active Banner -->
     <div id="adminModeBanner" class="hidden bg-gradient-to-r from-amber-600 via-orange-600 to-amber-600 text-white py-2 px-4 text-center text-xs sm:text-sm font-semibold tracking-wide shadow-inner">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <span class="flex items-center">
-                <i class="fa-solid fa-[#000] fa-user-gear mr-2 text-amber-200"></i>
-                ADMIN MANAGEMENT ACTIVE — You can click any timeslot below to toggle status between Reserved & Available.
+                <i class="fa-solid fa-user-gear mr-2 text-amber-200"></i>
+                ADMIN MANAGEMENT MODE — Click any slot on the schedule to toggle status (Available / Reserved / Maintenance).
             </span>
             <button onclick="exitAdminMode()" class="text-xs underline font-bold hover:text-amber-200 ml-4">
                 Exit Admin
@@ -111,95 +109,89 @@
         </div>
     </div>
 
-    <!-- Main Content Container -->
+    <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
 
-        <!-- Hero & Facility Overview Cards -->
+        <!-- Court Rates & Player Capacities -->
         <section class="mb-10">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-6">
                 <div>
-                    <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Court & Range Availability</h1>
-                    <p class="text-slate-400 mt-1 text-sm sm:text-base">Check live schedules, rates, and submit instant reservation requests.</p>
+                    <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">Court & Range Rates</h1>
+                    <p class="text-slate-400 mt-1 text-sm sm:text-base">View availability, select timeslots, and send instant booking requests via Messenger.</p>
                 </div>
-                <div class="mt-4 md:mt-0 flex items-center space-x-2 text-xs text-slate-400">
-                    <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                    <span>Available</span>
-                    <span class="w-3 h-3 rounded-full bg-rose-500 inline-block ml-3"></span>
-                    <span>Reserved</span>
-                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block ml-3"></span>
-                    <span>Maintenance</span>
+                <div class="mt-4 md:mt-0 flex items-center space-x-3 text-xs text-slate-400">
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block mr-1.5"></span> Available</span>
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block mr-1.5"></span> Reserved</span>
+                    <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block mr-1.5"></span> Maintenance</span>
                 </div>
             </div>
 
-            <!-- Pricing Cards Grid -->
+            <!-- Court Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Main Court Card -->
-                <div class="relative bg-slate-900/80 rounded-2xl p-5 border border-slate-800 hover:border-lime-500/50 transition-all shadow-xl overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-lime-500/10 rounded-full blur-2xl group-hover:bg-lime-500/20 transition-all"></div>
-                    <div class="flex justify-between items-start mb-4">
+                <!-- Main Court -->
+                <div class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 hover:border-lime-500/50 transition-all shadow-xl relative overflow-hidden group">
+                    <div class="flex justify-between items-start mb-3">
                         <div class="w-10 h-10 rounded-xl bg-lime-500/10 border border-lime-500/30 flex items-center justify-center text-lime-400 font-bold">
                             <i class="fa-solid fa-trophy text-lg"></i>
                         </div>
-                        <span class="px-3 py-1 bg-lime-500/10 text-lime-400 text-xs font-bold rounded-full border border-lime-500/20">
+                        <span class="px-3 py-1 bg-lime-500/10 text-lime-400 text-xs font-extrabold rounded-full border border-lime-500/20">
                             ₱600 / HR
                         </span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-1">Main Court</h3>
-                    <p class="text-xs text-slate-400 mb-4">Full tournament standard court with premium acrylic flooring and LED lighting.</p>
-                    <div class="flex items-center text-xs text-slate-400 space-x-4">
-                        <span><i class="fa-solid fa-users text-lime-400 mr-1"></i> Up to 4 players</span>
-                        <span><i class="fa-solid fa-sun text-lime-400 mr-1"></i> Covered</span>
+                    <h3 class="text-xl font-extrabold text-white mb-1">Main Court</h3>
+                    <p class="text-xs text-slate-400 mb-4">Standard court for match play, games, and group sessions.</p>
+                    <div class="flex items-center justify-between text-xs font-semibold text-slate-300 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                        <span><i class="fa-solid fa-users text-lime-400 mr-1.5"></i> Capacity:</span>
+                        <span class="text-lime-400 font-bold">Up to 8 players</span>
                     </div>
                 </div>
 
-                <!-- Training Range 1 Card -->
-                <div class="relative bg-slate-900/80 rounded-2xl p-5 border border-slate-800 hover:border-sky-500/50 transition-all shadow-xl overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-all"></div>
-                    <div class="flex justify-between items-start mb-4">
+                <!-- Training Range 1 -->
+                <div class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 hover:border-sky-500/50 transition-all shadow-xl relative overflow-hidden group">
+                    <div class="flex justify-between items-start mb-3">
                         <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold">
                             <i class="fa-solid fa-robot text-lg"></i>
                         </div>
-                        <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-xs font-bold rounded-full border border-sky-500/20">
+                        <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-xs font-extrabold rounded-full border border-sky-500/20">
                             ₱400 / HR
                         </span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-1">Training Range 1</h3>
-                    <p class="text-xs text-slate-400 mb-4">Includes SpinShot Automatic Ball Machine, target cones, & high rebound wall.</p>
-                    <div class="flex items-center text-xs text-slate-400 space-x-4">
-                        <span><i class="fa-solid fa-circle-dot text-sky-400 mr-1"></i> Ball Machine Included</span>
-                        <span><i class="fa-solid fa-user text-sky-400 mr-1"></i> 1-2 Players</span>
+                    <h3 class="text-xl font-extrabold text-white mb-1">Training Range 1</h3>
+                    <p class="text-xs text-slate-400 mb-4">Includes automated ball machine for solo or small group drills.</p>
+                    <div class="flex items-center justify-between text-xs font-semibold text-slate-300 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                        <span><i class="fa-solid fa-user-group text-sky-400 mr-1.5"></i> Capacity:</span>
+                        <span class="text-sky-400 font-bold">Up to 4 players only</span>
                     </div>
                 </div>
 
-                <!-- Training Range 2 Card -->
-                <div class="relative bg-slate-900/80 rounded-2xl p-5 border border-slate-800 hover:border-sky-500/50 transition-all shadow-xl overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-all"></div>
-                    <div class="flex justify-between items-start mb-4">
+                <!-- Training Range 2 -->
+                <div class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 hover:border-sky-500/50 transition-all shadow-xl relative overflow-hidden group">
+                    <div class="flex justify-between items-start mb-3">
                         <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold">
                             <i class="fa-solid fa-robot text-lg"></i>
                         </div>
-                        <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-xs font-bold rounded-full border border-sky-500/20">
+                        <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-xs font-extrabold rounded-full border border-sky-500/20">
                             ₱400 / HR
                         </span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-1">Training Range 2</h3>
-                    <p class="text-xs text-slate-400 mb-4">Includes Tutor Ball Machine for dink practice, serve returns & agility drills.</p>
-                    <div class="flex items-center text-xs text-slate-400 space-x-4">
-                        <span><i class="fa-solid fa-circle-dot text-sky-400 mr-1"></i> Ball Machine Included</span>
-                        <span><i class="fa-solid fa-user text-sky-400 mr-1"></i> 1-2 Players</span>
+                    <h3 class="text-xl font-extrabold text-white mb-1">Training Range 2</h3>
+                    <p class="text-xs text-slate-400 mb-4">Includes automated ball machine for serves, dinks & practice.</p>
+                    <div class="flex items-center justify-between text-xs font-semibold text-slate-300 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                        <span><i class="fa-solid fa-user-group text-sky-400 mr-1.5"></i> Capacity:</span>
+                        <span class="text-sky-400 font-bold">Up to 4 players only</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Dynamic Statistics Bar -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <!-- Clean Statistics Bar (No Projected Revenue) -->
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-center space-x-3 shadow-lg">
                 <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
                     <i class="fa-solid fa-border-all text-lg"></i>
                 </div>
                 <div>
-                    <span class="text-xs text-slate-400 block font-medium">Total Slots</span>
+                    <span class="text-xs text-slate-400 block font-medium">Daily Total Slots</span>
                     <span id="statTotalSlots" class="text-xl font-extrabold text-white">45</span>
                 </div>
             </div>
@@ -208,7 +200,7 @@
                     <i class="fa-solid fa-circle-check text-lg"></i>
                 </div>
                 <div>
-                    <span class="text-xs text-slate-400 block font-medium">Available</span>
+                    <span class="text-xs text-slate-400 block font-medium">Available Slots</span>
                     <span id="statAvailableSlots" class="text-xl font-extrabold text-emerald-400">0</span>
                 </div>
             </div>
@@ -217,22 +209,13 @@
                     <i class="fa-solid fa-lock text-lg"></i>
                 </div>
                 <div>
-                    <span class="text-xs text-slate-400 block font-medium">Reserved</span>
+                    <span class="text-xs text-slate-400 block font-medium">Reserved Slots</span>
                     <span id="statReservedSlots" class="text-xl font-extrabold text-rose-400">0</span>
-                </div>
-            </div>
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-center space-x-3 shadow-lg">
-                <div class="w-10 h-10 rounded-xl bg-lime-500/10 border border-lime-500/30 flex items-center justify-center text-lime-400">
-                    <i class="fa-solid fa-peso-sign text-lg"></i>
-                </div>
-                <div>
-                    <span class="text-xs text-slate-400 block font-medium">Projected Revenue</span>
-                    <span id="statProjectedRev" class="text-xl font-extrabold text-lime-400">₱0</span>
                 </div>
             </div>
         </section>
 
-        <!-- Date Selection & Admin Control Toolbar -->
+        <!-- Date Selection Toolbar -->
         <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 mb-8 shadow-2xl">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 
@@ -243,17 +226,17 @@
                     </label>
                     <input type="date" id="dateSelect" class="bg-slate-950 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-lime-400 focus:ring-1 focus:ring-lime-400 transition-all cursor-pointer">
                     
-                    <button onclick="setTodayDate()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold rounded-xl border border-slate-700 transition-all">
+                    <button onclick="setTodayDate()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-bold rounded-xl border border-slate-700 transition-all">
                         Today
                     </button>
-                    <button onclick="setTomorrowDate()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold rounded-xl border border-slate-700 transition-all">
+                    <button onclick="setTomorrowDate()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-bold rounded-xl border border-slate-700 transition-all">
                         Tomorrow
                     </button>
                 </div>
 
-                <!-- Admin Bulk Operations Bar (Visible only in Admin Mode) -->
+                <!-- Admin Quick Bulk Tools -->
                 <div id="adminControlsGroup" class="hidden flex flex-wrap items-center gap-2 border-t lg:border-t-0 border-slate-800 pt-3 lg:pt-0">
-                    <span class="text-xs font-semibold text-amber-400 mr-1"><i class="fa-solid fa-[#000] fa-bolt mr-1"></i>Quick Actions for Selected Date:</span>
+                    <span class="text-xs font-bold text-amber-400 mr-1"><i class="fa-solid fa-bolt mr-1"></i>Bulk Actions:</span>
                     <button onclick="bulkSetStatus('available')" class="px-3 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs font-bold rounded-lg transition-all">
                         Mark All Available
                     </button>
@@ -267,103 +250,185 @@
             </div>
         </section>
 
-        <!-- Interactive Schedule Matrix Container -->
+        <!-- Timeslot Schedule Matrix -->
         <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl overflow-hidden mb-12">
             <div class="flex items-center justify-between mb-4">
-                <h2 id="scheduleHeaderTitle" class="text-xl font-bold text-white flex items-center">
-                    <i class="fa-solid fa-[#000] fa-clock text-lime-400 mr-2"></i> Schedule Grid
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <i class="fa-solid fa-clock text-lime-400 mr-2"></i> Timeslot Schedule
                 </h2>
                 <span id="customerInstruction" class="text-xs text-slate-400 bg-slate-800/80 px-3 py-1 rounded-md">
-                    <i class="fa-solid fa-[#000] fa-circle-info text-sky-400 mr-1"></i> Click available slots to add to your booking request draft
+                    <i class="fa-solid fa-hand-pointer text-lime-400 mr-1"></i> Click available timeslots below to add to your Messenger booking draft
                 </span>
             </div>
 
-            <!-- Timeslot Table Responsive Wrapper -->
+            <!-- Schedule Table -->
             <div class="overflow-x-auto custom-scrollbar pb-2">
                 <table class="w-full text-left border-collapse min-w-[750px]">
                     <thead>
                         <tr class="border-b border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-950/50">
-                            <th class="py-3 px-4 w-36">Time Slot</th>
-                            <th class="py-3 px-4 text-center">
+                            <th class="py-3.5 px-4 w-40">Time Slot</th>
+                            <th class="py-3.5 px-4 text-center">
                                 <div class="text-white font-extrabold text-sm">Main Court</div>
-                                <div class="text-lime-400 text-xs font-normal">₱600 / hr</div>
+                                <div class="text-lime-400 text-xs font-medium">₱600/hr • Up to 8 Players</div>
                             </th>
-                            <th class="py-3 px-4 text-center">
+                            <th class="py-3.5 px-4 text-center">
                                 <div class="text-white font-extrabold text-sm">Training Range 1</div>
-                                <div class="text-sky-400 text-xs font-normal">₱400 / hr (Machine)</div>
+                                <div class="text-sky-400 text-xs font-medium">₱400/hr • Up to 4 Players</div>
                             </th>
-                            <th class="py-3 px-4 text-center">
+                            <th class="py-3.5 px-4 text-center">
                                 <div class="text-white font-extrabold text-sm">Training Range 2</div>
-                                <div class="text-sky-400 text-xs font-normal">₱400 / hr (Machine)</div>
+                                <div class="text-sky-400 text-xs font-medium">₱400/hr • Up to 4 Players</div>
                             </th>
                         </tr>
                     </thead>
                     <tbody id="scheduleTableBody" class="divide-y divide-slate-800/60 text-sm">
-                        <!-- Dynamic Rendering via JavaScript -->
+                        <!-- Dynamic Grid Rendering -->
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Customer Booking Inquiry Draft / Summary Drawer -->
-        <section id="customerBookingDrawer" class="bg-gradient-to-br from-slate-900 to-slate-950 border border-lime-500/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-4 mb-4">
-                <div>
-                    <h3 class="text-lg font-bold text-white flex items-center">
-                        <i class="fa-solid fa-[#000] fa-receipt text-lime-400 mr-2"></i> Booking Request Draft
-                    </h3>
-                    <p class="text-xs text-slate-400">Select available slots from the schedule grid above to build your booking draft.</p>
+        <!-- Booking Inquiry & Messenger Action Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            
+            <!-- Messenger Booking Draft Card -->
+            <div class="lg:col-span-2 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 mb-4 gap-2">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white flex items-center">
+                            <i class="fa-brands fa-facebook-messenger text-sky-400 mr-2.5 text-xl"></i> Instant Messenger Booking
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Select your desired slots above, then click to send your reservation request directly to Facebook Messenger.</p>
+                    </div>
+                    <div class="text-left sm:text-right">
+                        <span class="text-xs text-slate-400 block font-medium">Total Amount</span>
+                        <span id="draftTotalCost" class="text-2xl font-black text-lime-400">₱0</span>
+                    </div>
                 </div>
-                <div class="mt-3 md:mt-0 text-right">
-                    <span class="text-xs text-slate-400 block">Estimated Total</span>
-                    <span id="draftTotalCost" class="text-2xl font-black text-lime-400">₱0</span>
-                </div>
-            </div>
 
-            <!-- Selected Items Pills -->
-            <div id="selectedSlotsList" class="flex flex-wrap gap-2 mb-6 min-h-[40px] items-center">
-                <span class="text-xs text-slate-500 italic">No slots selected yet. Click any "Available" slot above.</span>
-            </div>
+                <!-- Selected Items Pills -->
+                <div id="selectedSlotsList" class="flex flex-wrap gap-2 mb-6 min-h-[44px] items-center p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+                    <span class="text-xs text-slate-500 italic"><i class="fa-solid fa-arrow-up mr-1 text-lime-400"></i> No slots selected yet. Click any "Book" button in the table above.</span>
+                </div>
 
-            <!-- Inquiry Form -->
-            <form id="inquiryForm" onsubmit="handleInquirySubmit(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Your Full Name</label>
-                    <input type="text" required id="custName" placeholder="e.g. Juan Cruz" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-lime-400">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Mobile / Contact No.</label>
-                    <input type="tel" required id="custPhone" placeholder="0917-XXX-XXXX" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-lime-400">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Special Notes / Request</label>
-                    <input type="text" id="custNotes" placeholder="e.g. Need extra paddles" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-lime-400">
-                </div>
-                <div class="md:col-span-3 flex justify-end mt-2">
-                    <button type="submit" id="submitInquiryBtn" disabled class="px-6 py-2.5 bg-slate-800 text-slate-500 font-bold rounded-xl text-sm transition-all cursor-not-allowed">
-                        <i class="fa-solid fa-[#000] fa-paper-plane mr-2"></i> Send Booking Inquiry
+                <!-- Direct Messenger Action Button -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                    <div class="text-xs text-slate-400 flex items-center">
+                        <i class="fa-solid fa-shield-halved text-emerald-400 mr-2 text-sm"></i>
+                        <span>Direct redirect to Official Facebook Messenger Page</span>
+                    </div>
+                    <button id="sendMessengerBtn" onclick="sendToMessenger()" disabled class="w-full sm:w-auto px-6 py-3 bg-slate-800 text-slate-500 font-extrabold rounded-xl text-sm transition-all cursor-not-allowed flex items-center justify-center space-x-2">
+                        <i class="fa-brands fa-facebook-messenger text-lg"></i>
+                        <span>Send Booking via Messenger</span>
                     </button>
                 </div>
-            </form>
+            </div>
+
+            <!-- GCash Payment QR & Info Card -->
+            <div class="bg-gradient-to-b from-blue-900/30 via-slate-900 to-slate-950 border border-blue-500/30 rounded-2xl p-6 shadow-2xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-xs">
+                                G
+                            </div>
+                            <span class="font-bold text-white text-base">GCash Payment</span>
+                        </div>
+                        <span class="text-[10px] font-extrabold tracking-widest text-blue-400 uppercase bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">Official QR</span>
+                    </div>
+
+                    <!-- QR Code Render Box -->
+                    <div class="bg-gradient-to-b from-blue-600 to-blue-700 p-4 rounded-2xl text-center shadow-inner mb-4 flex flex-col items-center">
+                        <div class="bg-white p-3 rounded-xl shadow-2xl max-w-[200px] w-full border-2 border-white">
+                            <!-- High Accuracy GCash QR SVG Layout -->
+                            <svg viewBox="0 0 200 200" class="w-full h-auto rounded-lg">
+                                <rect width="200" height="200" fill="#ffffff" />
+                                <!-- GCash Top Brand Header -->
+                                <path d="M20 15 h160 v25 h-160 z" fill="#005CE6" rx="4"/>
+                                <text x="100" y="32" font-family="Inter, sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">GCash</text>
+                                
+                                <!-- QR Grid Outline & Position Markers -->
+                                <g fill="#000000">
+                                    <!-- Top Left Finder -->
+                                    <rect x="25" y="55" width="35" height="35" rx="4"/>
+                                    <rect x="30" y="60" width="25" height="25" fill="#ffffff"/>
+                                    <rect x="35" y="65" width="15" height="15" fill="#000000"/>
+                                    
+                                    <!-- Top Right Finder -->
+                                    <rect x="140" y="55" width="35" height="35" rx="4"/>
+                                    <rect x="145" y="60" width="25" height="25" fill="#ffffff"/>
+                                    <rect x="150" y="65" width="15" height="15" fill="#000000"/>
+
+                                    <!-- Bottom Left Finder -->
+                                    <rect x="25" y="140" width="35" height="35" rx="4"/>
+                                    <rect x="30" y="145" width="25" height="25" fill="#ffffff"/>
+                                    <rect x="35" y="150" width="15" height="15" fill="#000000"/>
+
+                                    <!-- Center InstaPay Badge Mock -->
+                                    <rect x="75" y="105" width="50" height="20" fill="#cc0000" rx="3"/>
+                                    <text x="100" y="119" font-family="Inter, sans-serif" font-weight="800" font-size="8" fill="#ffffff" text-anchor="middle">instaPay</text>
+
+                                    <!-- Data Pattern Dots -->
+                                    <rect x="70" y="55" width="10" height="10"/>
+                                    <rect x="90" y="55" width="10" height="10"/>
+                                    <rect x="110" y="55" width="10" height="10"/>
+                                    <rect x="70" y="75" width="10" height="10"/>
+                                    <rect x="120" y="75" width="10" height="10"/>
+                                    <rect x="90" y="85" width="10" height="10"/>
+                                    <rect x="140" y="100" width="10" height="10"/>
+                                    <rect x="160" y="100" width="10" height="10"/>
+                                    <rect x="70" y="135" width="10" height="10"/>
+                                    <rect x="90" y="135" width="10" height="10"/>
+                                    <rect x="110" y="145" width="10" height="10"/>
+                                    <rect x="130" y="135" width="10" height="10"/>
+                                    <rect x="150" y="145" width="10" height="10"/>
+                                    <rect x="140" y="165" width="10" height="10"/>
+                                    <rect x="160" y="165" width="10" height="10"/>
+                                    <rect x="90" y="165" width="10" height="10"/>
+                                    <rect x="110" y="165" width="10" height="10"/>
+                                </g>
+                            </svg>
+                        </div>
+                        <span class="text-white font-extrabold text-sm mt-2">BR**N V.</span>
+                        <span class="text-blue-200 text-xs font-mono">0917-825-0508</span>
+                    </div>
+
+                    <!-- Copy Number Action -->
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between mb-3">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block font-semibold uppercase">GCash Mobile Number</span>
+                            <span class="text-sm font-black text-white font-mono tracking-wider">09178250508</span>
+                        </div>
+                        <button onclick="copyGcashNumber()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-all shadow-md">
+                            <i class="fa-regular fa-copy mr-1"></i> Copy
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-[11px] text-slate-400 text-center leading-relaxed">
+                    Attach GCash payment receipt when messaging on Facebook Messenger to confirm slot reservation.
+                </p>
+            </div>
         </section>
 
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 border-t border-slate-800 mt-16 py-8 text-slate-400 text-sm">
+    <footer class="bg-slate-900 border-t border-slate-800 py-8 text-slate-400 text-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center space-x-2">
                 <div class="w-6 h-6 rounded-md bg-lime-400 flex items-center justify-center text-slate-950 font-bold text-xs">
-                    <i class="fa-solid fa-[#000] fa-table-tennis-paddle-ball"></i>
+                    <i class="fa-solid fa-table-tennis-paddle-ball"></i>
                 </div>
-                <span class="font-bold text-white">Smash & Spin Pickleball Club</span>
+                <span class="font-extrabold text-white tracking-tight">re:serve pickleball court</span>
             </div>
             <div class="text-xs text-slate-500">
-                © <span id="yearSpan"></span> Smash & Spin Pickleball Club. All Rights Reserved.
+                © <span id="yearSpan"></span> re:serve pickleball court. All rights reserved.
             </div>
             <div class="flex space-x-4 text-xs">
-                <span class="hover:text-lime-400 cursor-pointer"><i class="fa-solid fa-[#000] fa-phone mr-1"></i> (02) 8888-7654</span>
-                <span class="hover:text-lime-400 cursor-pointer"><i class="fa-brands fa-whatsapp mr-1"></i> +63 917 123 4567</span>
+                <a href="https://www.facebook.com/profile.php?id=61595264373061" target="_blank" class="hover:text-lime-400 flex items-center">
+                    <i class="fa-brands fa-facebook mr-1.5 text-sky-400"></i> Facebook Page
+                </a>
             </div>
         </div>
     </footer>
@@ -372,37 +437,37 @@
     <div id="adminPinModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
             <button onclick="closeAdminPinModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <i class="fa-solid fa-[#000] fa-xmark text-lg"></i>
+                <i class="fa-solid fa-xmark text-lg"></i>
             </button>
             <div class="text-center mb-6">
                 <div class="w-12 h-12 bg-amber-500/10 border border-amber-500/30 rounded-full flex items-center justify-center mx-auto mb-3 text-amber-400 text-xl">
-                    <i class="fa-solid fa-[#000] fa-lock"></i>
+                    <i class="fa-solid fa-lock"></i>
                 </div>
                 <h3 class="text-lg font-bold text-white">Owner / Admin Access</h3>
-                <p class="text-xs text-slate-400 mt-1">Enter PIN code to unlock schedule management mode. <br><span class="text-amber-400 font-mono">(Demo PIN: 1234)</span></p>
+                <p class="text-xs text-slate-400 mt-1">Enter PIN to unlock schedule management mode. <br><span class="text-amber-400 font-mono">(Demo PIN: 1234)</span></p>
             </div>
             
             <form onsubmit="verifyAdminPin(event)">
                 <div class="mb-4">
-                    <input type="password" id="pinInput" maxlength="6" autofocus placeholder="Enter 4-digit PIN" class="w-full text-center text-xl tracking-widest bg-slate-950 border border-slate-700 text-white rounded-xl py-2.5 focus:outline-none focus:border-amber-400">
+                    <input type="password" id="pinInput" maxlength="6" autofocus placeholder="Enter PIN" class="w-full text-center text-xl tracking-widest bg-slate-950 border border-slate-700 text-white rounded-xl py-2.5 focus:outline-none focus:border-amber-400">
                     <p id="pinErrorMsg" class="text-xs text-rose-400 text-center mt-2 hidden">Incorrect PIN. Try 1234.</p>
                 </div>
                 <button type="submit" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-sm transition-all shadow-lg shadow-amber-500/20">
-                    Unlock Admin Mode
+                    Unlock Owner Mode
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Feedback Toast Notification -->
+    <!-- Feedback Toast -->
     <div id="toastNotification" class="fixed bottom-6 right-6 z-50 bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transition-all duration-300 transform translate-y-20 opacity-0">
-        <i id="toastIcon" class="fa-solid fa-[#000] fa-circle-check text-lime-400 text-lg"></i>
+        <i id="toastIcon" class="fa-solid fa-circle-check text-lime-400 text-lg"></i>
         <span id="toastMsg" class="text-sm font-medium">Notification message</span>
     </div>
 
-    <!-- JavaScript Application Logic -->
+    <!-- Application Script -->
     <script>
-        // Constants & Configuration
+        // Operating Hours Definition (9:00 AM - 12:00 AM)
         const OPERATING_HOURS = [
             { id: '09-10', label: '9:00 AM - 10:00 AM' },
             { id: '10-11', label: '10:00 AM - 11:00 AM' },
@@ -422,21 +487,21 @@
         ];
 
         const COURTS = [
-            { id: 'main', name: 'Main Court', price: 600 },
-            { id: 'range1', name: 'Training Range 1', price: 400 },
-            { id: 'range2', name: 'Training Range 2', price: 400 }
+            { id: 'main', name: 'Main Court', price: 600, capacity: 'Up to 8 players' },
+            { id: 'range1', name: 'Training Range 1', price: 400, capacity: 'Up to 4 players' },
+            { id: 'range2', name: 'Training Range 2', price: 400, capacity: 'Up to 4 players' }
         ];
 
         const DEMO_PIN = "1234";
-        const STORAGE_KEY = "smash_spin_pickleball_schedule_db";
+        const STORAGE_KEY = "reserve_pickleball_schedule_db";
+        const MESSENGER_URL = "https://www.facebook.com/profile.php?id=61595264373061";
 
         // Application State
         let isAdminMode = false;
         let selectedDate = new Date().toISOString().split('T')[0];
         let scheduleData = {};
-        let customerSelectedSlots = []; // Array of { date, timeId, courtId, courtName, price, timeLabel }
+        let customerSelectedSlots = [];
 
-        // Initializer
         window.onload = function() {
             document.getElementById('yearSpan').textContent = new Date().getFullYear();
             initDatePicker();
@@ -445,7 +510,6 @@
             updateDraftSummary();
         };
 
-        // Date Picker Initialization
         function initDatePicker() {
             const dateInput = document.getElementById('dateSelect');
             dateInput.value = selectedDate;
@@ -469,7 +533,6 @@
             renderScheduleTable();
         }
 
-        // LocalStorage Management
         function loadScheduleFromStorage() {
             try {
                 const stored = localStorage.getItem(STORAGE_KEY);
@@ -480,7 +543,7 @@
                     saveScheduleToStorage();
                 }
             } catch(e) {
-                console.error("Error reading storage:", e);
+                console.error("Storage error:", e);
                 scheduleData = generateSampleData();
             }
         }
@@ -489,56 +552,46 @@
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
             } catch(e) {
-                console.error("Error saving to storage:", e);
+                console.error("Storage save error:", e);
             }
         }
 
-        // Sample Data Generator for Demo
         function generateSampleData() {
             const today = new Date().toISOString().split('T')[0];
             const data = {};
-            
-            // Seed today with some realistic sample reservations
             data[today] = {
                 'main': { '10-11': 'reserved', '18-19': 'reserved', '19-20': 'reserved' },
                 'range1': { '09-10': 'reserved', '15-16': 'reserved' },
                 'range2': { '14-15': 'reserved', '20-21': 'reserved' }
             };
-
             return data;
         }
 
-        // Render Schedule Table
         function renderScheduleTable() {
             const tbody = document.getElementById('scheduleTableBody');
             tbody.innerHTML = '';
 
-            // Ensure date object exists in memory
             if (!scheduleData[selectedDate]) {
                 scheduleData[selectedDate] = { main: {}, range1: {}, range2: {} };
             }
 
             let totalAvailable = 0;
             let totalReserved = 0;
-            let projectedRev = 0;
 
             OPERATING_HOURS.forEach(slot => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-800/30 transition-colors";
 
-                // Time column
                 let html = `<td class="py-3.5 px-4 font-semibold text-slate-300 text-xs sm:text-sm border-r border-slate-800/80">
                     <i class="fa-regular fa-clock text-slate-500 mr-2"></i>${slot.label}
                 </td>`;
 
-                // Court columns
                 COURTS.forEach(court => {
                     const status = (scheduleData[selectedDate][court.id] && scheduleData[selectedDate][court.id][slot.id]) 
                                    || 'available';
 
                     if (status === 'reserved') {
                         totalReserved++;
-                        projectedRev += court.price;
                     } else if (status === 'available') {
                         totalAvailable++;
                     }
@@ -556,22 +609,18 @@
                 tbody.appendChild(tr);
             });
 
-            // Update stats
             document.getElementById('statTotalSlots').textContent = OPERATING_HOURS.length * COURTS.length;
             document.getElementById('statAvailableSlots').textContent = totalAvailable;
             document.getElementById('statReservedSlots').textContent = totalReserved;
-            document.getElementById('statProjectedRev').textContent = `₱${projectedRev.toLocaleString()}`;
         }
 
-        // Generate Slot Button Component
         function renderSlotButton(date, timeId, timeLabel, courtId, courtName, price, status, isDraftSelected) {
             if (isAdminMode) {
-                // Admin View: Direct Toggle Controls
                 if (status === 'reserved') {
                     return `
                         <button onclick="toggleSlotStatus('${date}', '${courtId}', '${timeId}')" 
                                 class="slot-btn w-full py-2 px-3 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/50 text-rose-300 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow-sm">
-                            <i class="fa-solid fa-[#000] fa-lock text-rose-400"></i>
+                            <i class="fa-solid fa-lock text-rose-400"></i>
                             <span>RESERVED</span>
                         </button>
                     `;
@@ -579,7 +628,7 @@
                     return `
                         <button onclick="toggleSlotStatus('${date}', '${courtId}', '${timeId}')" 
                                 class="slot-btn w-full py-2 px-3 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 shadow-sm">
-                            <i class="fa-solid fa-[#000] fa-screwdriver-wrench text-amber-400"></i>
+                            <i class="fa-solid fa-screwdriver-wrench text-amber-400"></i>
                             <span>BLOCKED</span>
                         </button>
                     `;
@@ -587,42 +636,40 @@
                     return `
                         <button onclick="toggleSlotStatus('${date}', '${courtId}', '${timeId}')" 
                                 class="slot-btn w-full py-2 px-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-xl font-semibold text-xs flex items-center justify-center space-x-1.5">
-                            <i class="fa-solid fa-[#000] fa-circle-check text-emerald-400"></i>
+                            <i class="fa-solid fa-circle-check text-emerald-400"></i>
                             <span>AVAILABLE</span>
                         </button>
                     `;
                 }
             } else {
-                // Customer Read-Only View
                 if (status === 'reserved') {
                     return `
                         <div class="w-full py-2 px-3 bg-slate-900/90 border border-slate-800 text-slate-500 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 cursor-not-allowed opacity-75">
-                            <i class="fa-solid fa-[#000] fa-ban text-slate-600"></i>
+                            <i class="fa-solid fa-ban text-slate-600"></i>
                             <span>Reserved</span>
                         </div>
                     `;
                 } else if (status === 'maintenance') {
                     return `
                         <div class="w-full py-2 px-3 bg-slate-900/90 border border-slate-800 text-amber-500/70 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 cursor-not-allowed">
-                            <i class="fa-solid fa-[#000] fa-screwdriver-wrench text-amber-500/70"></i>
-                            <span>Under Maintenance</span>
+                            <i class="fa-solid fa-screwdriver-wrench text-amber-500/70"></i>
+                            <span>Maintenance</span>
                         </div>
                     `;
                 } else {
-                    // Available slot can be selected to draft booking inquiry
                     if (isDraftSelected) {
                         return `
                             <button onclick="toggleCustomerDraftSlot('${date}', '${timeId}', '${timeLabel}', '${courtId}', '${courtName}', ${price})" 
-                                    class="slot-btn w-full py-2 px-3 bg-lime-400 text-slate-950 font-bold border border-lime-300 rounded-xl text-xs flex items-center justify-center space-x-1 shadow-md shadow-lime-400/20">
-                                <i class="fa-solid fa-[#000] fa-check-double text-slate-950"></i>
+                                    class="slot-btn w-full py-2 px-3 bg-lime-400 text-slate-950 font-black border border-lime-300 rounded-xl text-xs flex items-center justify-center space-x-1 shadow-md shadow-lime-400/20">
+                                <i class="fa-solid fa-check-double text-slate-950"></i>
                                 <span>Selected</span>
                             </button>
                         `;
                     } else {
                         return `
                             <button onclick="toggleCustomerDraftSlot('${date}', '${timeId}', '${timeLabel}', '${courtId}', '${courtName}', ${price})" 
-                                    class="slot-btn w-full py-2 px-3 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 text-emerald-300 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 hover:border-emerald-400 transition-all">
-                                <i class="fa-solid fa-[#000] fa-plus text-emerald-400"></i>
+                                    class="slot-btn w-full py-2 px-3 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 text-emerald-300 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 hover:border-emerald-400 transition-all">
+                                <i class="fa-solid fa-plus text-emerald-400"></i>
                                 <span>Book ₱${price}</span>
                             </button>
                         `;
@@ -631,7 +678,6 @@
             }
         }
 
-        // Admin Slot Status Toggle Logic (Cycle: available -> reserved -> maintenance -> available)
         function toggleSlotStatus(date, courtId, timeId) {
             if (!isAdminMode) return;
 
@@ -652,10 +698,9 @@
             scheduleData[date][courtId][timeId] = nextState;
             saveScheduleToStorage();
             renderScheduleTable();
-            showToast(`Slot state updated to ${nextState.toUpperCase()}`);
+            showToast(`Slot status changed to ${nextState.toUpperCase()}`);
         }
 
-        // Bulk Actions for Admin
         function bulkSetStatus(targetStatus) {
             if (!isAdminMode) return;
             if (!scheduleData[selectedDate]) scheduleData[selectedDate] = {};
@@ -669,7 +714,7 @@
 
             saveScheduleToStorage();
             renderScheduleTable();
-            showToast(`All slots for ${selectedDate} marked as ${targetStatus.toUpperCase()}`);
+            showToast(`All slots for ${selectedDate} updated to ${targetStatus.toUpperCase()}`);
         }
 
         function resetSelectedDateSchedule() {
@@ -677,10 +722,9 @@
             scheduleData[selectedDate] = { main: {}, range1: {}, range2: {} };
             saveScheduleToStorage();
             renderScheduleTable();
-            showToast(`Schedule reset to defaults for ${selectedDate}`);
+            showToast(`Schedule reset for ${selectedDate}`);
         }
 
-        // Customer Interactive Draft Selection
         function toggleCustomerDraftSlot(date, timeId, timeLabel, courtId, courtName, price) {
             const index = customerSelectedSlots.findIndex(s => 
                 s.date === date && s.timeId === timeId && s.courtId === courtId
@@ -705,13 +749,13 @@
         function updateDraftSummary() {
             const container = document.getElementById('selectedSlotsList');
             const totalCostElem = document.getElementById('draftTotalCost');
-            const submitBtn = document.getElementById('submitInquiryBtn');
+            const sendBtn = document.getElementById('sendMessengerBtn');
 
             if (customerSelectedSlots.length === 0) {
-                container.innerHTML = `<span class="text-xs text-slate-500 italic"><i class="fa-solid fa-[#000] fa-hand-pointer mr-1"></i> No slots selected yet. Click any "Book ₱X" button above.</span>`;
+                container.innerHTML = `<span class="text-xs text-slate-500 italic"><i class="fa-solid fa-arrow-up mr-1 text-lime-400"></i> No slots selected yet. Click any "Book" button in the table above.</span>`;
                 totalCostElem.textContent = "₱0";
-                submitBtn.disabled = true;
-                submitBtn.className = "px-6 py-2.5 bg-slate-800 text-slate-500 font-bold rounded-xl text-sm transition-all cursor-not-allowed opacity-70";
+                sendBtn.disabled = true;
+                sendBtn.className = "w-full sm:w-auto px-6 py-3 bg-slate-800 text-slate-500 font-extrabold rounded-xl text-sm transition-all cursor-not-allowed flex items-center justify-center space-x-2";
                 return;
             }
 
@@ -721,12 +765,12 @@
             customerSelectedSlots.forEach((item, idx) => {
                 totalCost += item.price;
                 pillsHtml += `
-                    <div class="inline-flex items-center bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs">
-                        <span class="font-bold text-lime-400 mr-1 text-[11px]">[${item.date}]</span>
+                    <div class="inline-flex items-center bg-slate-900 border border-slate-700 text-white rounded-xl px-3 py-1.5 text-xs">
+                        <span class="font-bold text-lime-400 mr-1.5">[${item.date}]</span>
                         <span class="font-medium mr-1.5">${item.courtName} (${item.timeLabel})</span>
-                        <span class="text-slate-400 mr-2">₱${item.price}</span>
+                        <span class="text-slate-400 mr-2 font-bold">₱${item.price}</span>
                         <button onclick="removeDraftItem(${idx})" class="text-slate-400 hover:text-rose-400">
-                            <i class="fa-solid fa-[#000] fa-xmark"></i>
+                            <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
                 `;
@@ -734,47 +778,54 @@
 
             container.innerHTML = pillsHtml;
             totalCostElem.textContent = `₱${totalCost.toLocaleString()}`;
-            submitBtn.disabled = false;
-            submitBtn.className = "px-6 py-2.5 bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold rounded-xl text-sm transition-all shadow-lg shadow-lime-400/20 cursor-pointer";
+            sendBtn.disabled = false;
+            sendBtn.className = "w-full sm:w-auto px-6 py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded-xl text-sm transition-all shadow-lg shadow-sky-500/20 cursor-pointer flex items-center justify-center space-x-2";
         }
 
-        // Handle Inquiry Submission
-        function handleInquirySubmit(e) {
-            e.preventDefault();
+        // Direct Messenger Redirect with Pre-copied Booking Text
+        function sendToMessenger() {
             if (customerSelectedSlots.length === 0) return;
 
-            const name = document.getElementById('custName').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-            const notes = document.getElementById('custNotes').value.trim();
-
-            let summary = `*Booking Reservation Request*\n`;
-            summary += `Name: ${name}\nContact: ${phone}\n`;
-            if (notes) summary += `Notes: ${notes}\n`;
-            summary += `----------------------\n`;
+            let bookingSummary = `Hello re:serve pickleball court! I would like to book the following:\n\n`;
+            let total = 0;
 
             customerSelectedSlots.forEach(s => {
-                summary += `• ${s.date} | ${s.courtName} | ${s.timeLabel} (₱${s.price})\n`;
+                bookingSummary += `• Date: ${s.date}\n  Court: ${s.courtName}\n  Time: ${s.timeLabel}\n  Price: ₱${s.price}\n\n`;
+                total += s.price;
             });
 
-            const total = customerSelectedSlots.reduce((acc, curr) => acc + curr.price, 0);
-            summary += `----------------------\nTotal: ₱${total.toLocaleString()}`;
+            bookingSummary += `Total Amount: ₱${total.toLocaleString()}\n`;
+            bookingSummary += `Payment Method: GCash (09178250508 - BR**N V.)\n\n`;
+            bookingSummary += `Please confirm slot availability. Thank you!`;
 
-            // Reset Form & Draft
-            showToast("Reservation inquiry prepared! Opening WhatsApp/Contact line...");
-            
-            // Construct WhatsApp direct text link demo
-            const encodedText = encodeURIComponent(summary);
+            // Copy booking text to clipboard automatically
+            const el = document.createElement('textarea');
+            el.value = bookingSummary;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            showToast("Booking summary copied! Redirecting to Facebook Messenger...");
+
             setTimeout(() => {
-                window.open(`https://wa.me/639171234567?text=${encodedText}`, '_blank');
+                window.open(MESSENGER_URL, '_blank');
             }, 800);
-
-            customerSelectedSlots = [];
-            document.getElementById('inquiryForm').reset();
-            updateDraftSummary();
-            renderScheduleTable();
         }
 
-        // Mode Switching Mechanics
+        function copyGcashNumber() {
+            const gcashNo = "09178250508";
+            const el = document.createElement('textarea');
+            el.value = gcashNo;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            showToast("GCash Number (09178250508) copied to clipboard!");
+        }
+
+        // Owner Access Logic
         function handleModeSwitchToggle() {
             if (isAdminMode) {
                 exitAdminMode();
@@ -802,7 +853,7 @@
                 isAdminMode = true;
                 closeAdminPinModal();
                 updateUIForAdminMode();
-                showToast("Admin mode activated. Click slots to toggle status.");
+                showToast("Owner mode unlocked. Click slots to toggle availability.");
             } else {
                 document.getElementById('pinErrorMsg').classList.remove('hidden');
             }
@@ -824,20 +875,20 @@
 
             if (isAdminMode) {
                 badge.className = "hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40";
-                badge.innerHTML = `<i class="fa-solid fa-[#000] fa-user-gear mr-1.5"></i> Owner Admin Mode`;
+                badge.innerHTML = `<i class="fa-solid fa-user-gear mr-1.5"></i> Owner Admin Mode`;
 
-                toggleBtnText.textContent = "Exit Admin Mode";
-                toggleIcon.className = "fa-solid fa-[#000] fa-right-from-bracket mr-2";
+                toggleBtnText.textContent = "Exit Owner View";
+                toggleIcon.className = "fa-solid fa-right-from-bracket mr-2";
 
                 adminBanner.classList.remove('hidden');
                 adminControls.classList.remove('hidden');
                 customerInstruction.classList.add('hidden');
             } else {
                 badge.className = "hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/30";
-                badge.innerHTML = `<i class="fa-solid fa-[#000] fa-eye mr-1.5"></i> Read-Only View`;
+                badge.innerHTML = `<i class="fa-solid fa-eye mr-1.5"></i> Read-Only View`;
 
-                toggleBtnText.textContent = "Switch to Admin Mode";
-                toggleIcon.className = "fa-solid fa-[#000] fa-lock-open mr-2";
+                toggleBtnText.textContent = "Owner Access";
+                toggleIcon.className = "fa-solid fa-lock-open mr-2";
 
                 adminBanner.classList.add('hidden');
                 adminControls.classList.add('hidden');
@@ -847,7 +898,6 @@
             renderScheduleTable();
         }
 
-        // Toast Helper
         function showToast(message) {
             const toast = document.getElementById('toastNotification');
             const msgElem = document.getElementById('toastMsg');
