@@ -17,8 +17,7 @@
               dark: '#0f172a',
               card: '#1e293b',
               accent: '#22c55e',
-              reserved: '#ef4444',
-              pencil: '#f59e0b'
+              reserved: '#ef4444'
             }
           }
         }
@@ -41,10 +40,9 @@
       border: 1px solid rgba(239, 68, 68, 0.4);
       color: #fca5a5;
     }
-    .status-pencil {
-      background-color: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      color: #fde68a;
+    .status-pending-change {
+      outline: 2px dashed #a3e635;
+      outline-offset: 1px;
     }
     .cal-day-active {
       background-color: #a3e635 !important;
@@ -53,7 +51,7 @@
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased pb-12">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased pb-24">
 
   <!-- TOP HEADER NAV WITH HAMBURGER MENU -->
   <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
@@ -173,9 +171,9 @@
         <div>
           <h2 class="text-base font-bold text-white flex items-center gap-2">
             <i class="fa-solid fa-calendar-days text-lime-400"></i>
-            Select Date
+            Select Present or Future Date / View
           </h2>
-          <p class="text-xs text-slate-400">Choose your timeslots.</p>
+          <p class="text-xs text-slate-400">Past dates are disabled. Switch between Month View or Weekly Summary Matrix below.</p>
         </div>
 
         <!-- View Switcher (Monthly vs Weekly) -->
@@ -184,7 +182,7 @@
             <i class="fa-solid fa-calendar-grid"></i> Month View
           </button>
           <button id="viewWeekBtn" onclick="switchCalendarView('week')" class="px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition">
-            <i class="fa-solid fa-calendar-week"></i> Week View
+            <i class="fa-solid fa-calendar-week"></i> Week Summary View
           </button>
         </div>
       </div>
@@ -213,19 +211,24 @@
         <div id="monthGrid" class="grid grid-cols-7 gap-1.5 text-xs"></div>
       </div>
 
-      <!-- WEEK CALENDAR CONTAINER WITH DAILY OCCUPANCY INDICATORS -->
-      <div id="weekCalendarContainer" class="hidden space-y-3">
+      <!-- WEEK SUMMARY NAVIGATOR & BOTTOM OVERVIEW CALENDAR -->
+      <div id="weekCalendarContainer" class="hidden space-y-4 pt-2">
         <div class="flex items-center justify-between px-1">
           <button onclick="changeWeek(-1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
             <i class="fa-solid fa-chevron-left"></i> Prev Week
           </button>
-          <span id="currentWeekRangeLabel" class="text-xs font-bold text-slate-300"></span>
+          <span id="currentWeekRangeLabel" class="text-xs font-bold text-lime-400 uppercase tracking-wide"></span>
           <button onclick="changeWeek(1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
             Next Week <i class="fa-solid fa-chevron-right"></i>
           </button>
         </div>
 
-        <div id="weekGrid" class="grid grid-cols-1 sm:grid-cols-7 gap-2"></div>
+        <div class="space-y-2">
+          <div class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-week text-lime-400"></i> Weekly Overview Calendar (Click day to jump)
+          </div>
+          <div id="bottomWeekOverviewGrid" class="grid grid-cols-1 sm:grid-cols-7 gap-2"></div>
+        </div>
       </div>
 
       <!-- Selected Date Banner & Stats -->
@@ -233,7 +236,7 @@
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-clock text-lime-400 text-lg"></i>
           <div>
-            <span class="text-xs text-slate-400 block">Selected Date Schedule:</span>
+            <span class="text-xs text-slate-400 block" id="dateBannerTitle">Selected Date Schedule:</span>
             <span id="selectedDateDisplay" class="text-sm font-bold text-white">---</span>
           </div>
         </div>
@@ -242,9 +245,6 @@
         <div class="flex flex-wrap items-center gap-2 text-xs">
           <div class="px-2 py-0.5 rounded-lg bg-lime-400/10 border border-lime-400/20 text-lime-400">
             <span class="font-bold" id="statAvailable">0</span> Available
-          </div>
-          <div class="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
-            <span class="font-bold" id="statPencil">0</span> Pencil Booked
           </div>
           <div class="px-2 py-0.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
             <span class="font-bold" id="statReserved">0</span> Reserved
@@ -265,16 +265,14 @@
 
     <!-- SCHEDULE MATRIX TABLE -->
     <div class="glass-card rounded-2xl p-5 border border-slate-800 shadow-xl overflow-x-auto">
-      <div class="min-w-[700px]">
-        <!-- Table Header -->
-        <div class="grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider">
+      <div id="matrixContainerWrapper" class="min-w-[700px]">
+        <div id="matrixHeader" class="grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider">
           <div class="col-span-1">Timeslot (9 AM - 12 AM)</div>
           <div class="col-span-1 text-center">Standard Main Court (₱600/hr)</div>
           <div class="col-span-1 text-center">AC Range 1 + Machine (₱400/hr)</div>
           <div class="col-span-1 text-center">AC Range 2 + Machine (₱400/hr)</div>
         </div>
 
-        <!-- Timeslots Container -->
         <div id="scheduleGrid" class="divide-y divide-slate-800/60 text-sm"></div>
       </div>
     </div>
@@ -311,10 +309,14 @@
           </button>
         </div>
 
-        <p class="text-xs text-slate-400 flex items-start gap-2">
-          <i class="fa-solid fa-circle-info text-lime-400 mt-0.5"></i>
-          <span>Submitting booking pencil-books your selected slots for <strong>15 minutes</strong>. Send payment proof to Messenger to finalize!</span>
-        </p>
+        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-300 space-y-1">
+          <p class="font-bold flex items-center gap-1.5 text-amber-400">
+            <i class="fa-solid fa-triangle-exclamation"></i> First Paid, First Serve Policy
+          </p>
+          <p class="text-amber-200/90 leading-relaxed">
+            Schedules operate strictly on a <strong>First Paid, First Serve</strong> basis. Send your GCash payment confirmation receipt directly to Messenger to secure your slot!
+          </p>
+        </div>
       </div>
 
       <!-- Selected Booking & Messenger Link Card -->
@@ -326,7 +328,7 @@
           </div>
           <h3 class="text-lg font-bold text-white">Submit booking</h3>
           <p class="text-xs text-slate-400 mt-1">
-            Click available timeslots above, then click below. Selected slots will be pencil booked for <strong>15 minutes</strong> automatically!
+            Select available timeslots above, then click below to draft and send your booking inquiry to our Facebook page.
           </p>
 
           <div id="selectedSlotsSummary" class="mt-4 p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-2 min-h-[90px]">
@@ -345,6 +347,27 @@
     </div>
 
   </main>
+
+  <!-- STICKY ADMIN SAVE CHANGES BAR -->
+  <div id="adminSaveBar" class="fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t border-lime-400/40 p-4 shadow-2xl hidden transform transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="w-3 h-3 rounded-full bg-lime-400 animate-ping"></span>
+        <div>
+          <h4 class="text-sm font-bold text-white">Unsaved Admin Changes</h4>
+          <p class="text-xs text-slate-400">You have pending schedule updates. Save changes to make them live.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <button onclick="discardAdminChanges()" class="w-1/2 sm:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition">
+          Discard Changes
+        </button>
+        <button onclick="saveAdminChanges()" class="w-1/2 sm:w-auto px-6 py-2 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-black rounded-xl shadow-lg shadow-lime-400/20 transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ADMIN PIN MODAL -->
   <div id="adminModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
@@ -373,12 +396,40 @@
     </div>
   </div>
 
+  <!-- BOOKING REDIRECT MODAL -->
+  <div id="redirectModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-4">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center mx-auto text-xl">
+          <i class="fa-brands fa-facebook-messenger"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white">Booking Details Copied!</h3>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Your reservation message has been automatically copied to your clipboard.
+        </p>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 space-y-1">
+        <p class="font-semibold text-slate-200">Instructions:</p>
+        <p>If you are not automatically redirected to our Facebook page, please click the button below and paste the copied message into Messenger.</p>
+      </div>
+
+      <div class="pt-2 space-y-2">
+        <a id="messengerDirectBtn" href="#" target="_blank" onclick="closeRedirectModal()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+          <i class="fa-brands fa-facebook-messenger text-base"></i> Open Facebook Messenger
+        </a>
+        <button onclick="closeRedirectModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-semibold rounded-xl transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- JAVASCRIPT LOGIC -->
   <script>
-    // CONSTANTS & CONFIG
     const ADMIN_PIN = "113322";
     const FB_PAGE_ID = "61595264373061";
-    const PENCIL_DURATION_MS = 15 * 60 * 1000; // 15 Minutes
+    const DIRECT_MSG_LINK = `https://m.me/${FB_PAGE_ID}`;
 
     const OPERATING_HOURS = [
       "09:00 AM - 10:00 AM",
@@ -404,23 +455,17 @@
       { id: "range2", name: "Airconditioned Range 2 (Machine + Balls)", price: 400, limit: "Up to 4 Players" }
     ];
 
-    // APPLICATION STATE
     let isAdmin = false;
     let selectedDate = new Date();
     let calendarView = 'month';
     let displayedMonthDate = new Date();
     let customerSelections = [];
+    let pendingAdminDb = null; // Holds unsaved admin changes
 
     const LOCAL_STORAGE_KEY = "reserve_pickleball_schedule_db_v2";
 
-    // INITIALIZATION & TIMER CHECK
     window.addEventListener("DOMContentLoaded", () => {
-      // Normalize selectedDate to midnight for correct date comparison
       selectedDate.setHours(0, 0, 0, 0);
-
-      cleanExpiredPencilBookings();
-      setInterval(cleanExpiredPencilBookings, 10000);
-
       renderCalendar();
       updateSelectedDateDisplay();
       renderScheduleGrid();
@@ -447,30 +492,6 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    function cleanExpiredPencilBookings() {
-      const db = getStoredData();
-      const now = Date.now();
-      let updated = false;
-
-      Object.keys(db).forEach(dateKey => {
-        Object.keys(db[dateKey]).forEach(slotKey => {
-          const val = db[dateKey][slotKey];
-          if (typeof val === 'object' && val.status === 'pencil') {
-            if (now > val.expiresAt) {
-              delete db[dateKey][slotKey];
-              updated = true;
-            }
-          }
-        });
-      });
-
-      if (updated) {
-        saveStoredData(db);
-        renderScheduleGrid();
-        renderCalendar();
-      }
-    }
-
     function switchCalendarView(view) {
       calendarView = view;
       const monthBtn = document.getElementById('viewMonthBtn');
@@ -483,24 +504,26 @@
         weekBtn.className = "px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition";
         monthContainer.classList.remove('hidden');
         weekContainer.classList.add('hidden');
+        document.getElementById('dateBannerTitle').innerText = "Selected Date Schedule:";
       } else {
         weekBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-lime-400 text-slate-950 transition";
         monthBtn.className = "px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition";
         weekContainer.classList.remove('hidden');
         monthContainer.classList.add('hidden');
+        document.getElementById('dateBannerTitle').innerText = "Weekly Summary Range:";
       }
       renderCalendar();
+      renderScheduleGrid();
     }
 
     function renderCalendar() {
       if (calendarView === 'month') {
         renderMonthCalendar();
       } else {
-        renderWeekCalendar();
+        renderWeekSummaryBarAndOverview();
       }
     }
 
-    // MONTH CALENDAR (RESTRICTING PAST DATES)
     function renderMonthCalendar() {
       const monthGrid = document.getElementById('monthGrid');
       const monthLabel = document.getElementById('currentMonthYearLabel');
@@ -522,8 +545,6 @@
       }
 
       const selectedKey = getDateKey(selectedDate);
-      
-      // Today normalized to midnight for accurate comparison
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -539,11 +560,9 @@
         const dayBtn = document.createElement('button');
 
         if (isPast) {
-          // Disabled Style for Past Dates
           dayBtn.className = "h-9 rounded-lg border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 flex flex-col items-center justify-center";
           dayBtn.disabled = true;
         } else {
-          // Active Style for Present & Future Dates
           dayBtn.className = `h-9 rounded-lg border transition text-xs font-semibold flex flex-col items-center justify-center relative ${
             isSelected 
               ? 'cal-day-active border-lime-400 shadow-lg shadow-lime-400/20' 
@@ -570,91 +589,74 @@
       renderMonthCalendar();
     }
 
-    // WEEK CALENDAR (RESTRICTING PAST DATES)
-    function renderWeekCalendar() {
-      const weekGrid = document.getElementById('weekGrid');
+    function renderWeekSummaryBarAndOverview() {
       const weekLabel = document.getElementById('currentWeekRangeLabel');
-      weekGrid.innerHTML = "";
+      const overviewGrid = document.getElementById('bottomWeekOverviewGrid');
+      overviewGrid.innerHTML = "";
 
       const startOfWeek = new Date(selectedDate);
-      startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
+      startOfWeek.setDate(selectedDate.getDate() - startOfWeek.getDay());
 
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
 
       weekLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
-      const selectedKey = getDateKey(selectedDate);
-      
+      const db = pendingAdminDb || getStoredData();
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const db = getStoredData();
-      const totalPossibleSlots = OPERATING_HOURS.length * COURTS.length;
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
       for (let i = 0; i < 7; i++) {
-        const dayDate = new Date(startOfWeek);
-        dayDate.setDate(startOfWeek.getDate() + i);
-        dayDate.setHours(0, 0, 0, 0);
+        const wd = new Date(startOfWeek);
+        wd.setDate(startOfWeek.getDate() + i);
+        wd.setHours(0, 0, 0, 0);
 
-        const dayKey = getDateKey(dayDate);
-        const isSelected = dayKey === selectedKey;
-        const isToday = dayDate.getTime() === today.getTime();
-        const isPast = dayDate.getTime() < today.getTime();
+        const dKey = getDateKey(wd);
+        const isToday = wd.getTime() === today.getTime();
+        const isPast = wd.getTime() < today.getTime();
+        const dayData = db[dKey] || {};
 
-        const dayData = db[dayKey] || {};
-        let occupiedSlots = 0;
+        let dayReserved = 0;
+        let dayAvailable = 0;
 
-        Object.keys(dayData).forEach(k => {
-          const val = dayData[k];
-          if (val === 'reserved' || (typeof val === 'object' && val.status === 'pencil')) {
-            occupiedSlots++;
-          }
+        OPERATING_HOURS.forEach((_, tIdx) => {
+          COURTS.forEach(court => {
+            const sKey = `${court.id}_${tIdx}`;
+            const status = dayData[sKey] || 'available';
+            if (status === 'reserved') dayReserved++;
+            else dayAvailable++;
+          });
         });
 
-        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        const occupancyPercentage = Math.round((occupiedSlots / totalPossibleSlots) * 100);
-
-        const dayCard = document.createElement('button');
-
+        const card = document.createElement('button');
         if (isPast) {
-          dayCard.className = "p-3 rounded-xl border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 text-left flex flex-col justify-between";
-          dayCard.disabled = true;
+          card.className = "p-2.5 rounded-xl border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 text-left flex flex-col justify-between";
+          card.disabled = true;
         } else {
-          dayCard.className = `p-3 rounded-xl border transition text-left flex flex-col justify-between ${
-            isSelected 
-              ? 'cal-day-active border-lime-400 shadow-md' 
-              : isToday 
-                ? 'bg-slate-800 text-lime-400 border-lime-400/50' 
-                : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-          }`;
-
-          dayCard.onclick = () => {
-            selectedDate = dayDate;
+          card.className = `p-2.5 rounded-xl border transition text-left flex flex-col justify-between bg-slate-900 border-slate-800 hover:border-lime-400/50 hover:bg-slate-800/80 ${isToday ? 'border-lime-400/50 bg-slate-800 text-lime-400' : 'text-slate-300'}`;
+          card.onclick = () => {
+            selectedDate = new Date(wd);
+            switchCalendarView('month');
             updateSelectedDateDisplay();
             renderCalendar();
             renderScheduleGrid();
           };
         }
 
-        dayCard.innerHTML = `
-          <div class="flex justify-between items-center w-full">
+        card.innerHTML = `
+          <div class="flex justify-between items-center w-full mb-1">
             <span class="text-[10px] uppercase font-bold opacity-75">${dayNames[i]}</span>
-            <span class="text-xs font-black">${dayDate.getDate()}</span>
+            <span class="text-xs font-black">${wd.getDate()}</span>
           </div>
-          
-          <div class="mt-2 space-y-1 w-full">
-            <div class="flex justify-between text-[10px] font-semibold">
-              <span>Booked:</span>
-              <span class="${occupiedSlots > 30 ? 'text-red-400 font-bold' : 'opacity-90'}">${occupiedSlots} / ${totalPossibleSlots}</span>
-            </div>
-            <div class="w-full bg-slate-950/40 rounded-full h-1.5 overflow-hidden">
-              <div class="bg-amber-400 h-1.5 rounded-full" style="width: ${occupancyPercentage}%"></div>
-            </div>
+          <div class="space-y-0.5 text-[10px] font-semibold w-full">
+            <div class="text-lime-400 flex justify-between"><span>Avail:</span> <span>${dayAvailable}</span></div>
+            <div class="text-red-400 flex justify-between"><span>Res:</span> <span>${dayReserved}</span></div>
           </div>
         `;
 
-        weekGrid.appendChild(dayCard);
+        overviewGrid.appendChild(card);
       }
     }
 
@@ -667,109 +669,191 @@
     }
 
     function updateSelectedDateDisplay() {
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      document.getElementById('selectedDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
+      if (calendarView === 'month') {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('selectedDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
+      } else {
+        const startOfWeek = new Date(selectedDate);
+        startOfWeek.setDate(selectedDate.getDate() - startOfWeek.getDay());
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        document.getElementById('selectedDateDisplay').innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} to ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      }
     }
 
+    // RENDER SCHEDULE MATRIX (DAY VIEW vs WEEK SUMMARY MATRIX VIEW)
     function renderScheduleGrid() {
       const grid = document.getElementById('scheduleGrid');
+      const header = document.getElementById('matrixHeader');
       grid.innerHTML = "";
 
-      const db = getStoredData();
-      const dateKey = getDateKey();
-      const dayData = db[dateKey] || {};
+      const activeDb = pendingAdminDb || getStoredData();
+      const realDb = getStoredData();
 
       let availCount = 0;
       let reservedCount = 0;
-      let pencilCount = 0;
 
-      OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
-        const row = document.createElement('div');
-        row.className = "grid grid-cols-4 gap-3 py-3 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
+      if (calendarView === 'month') {
+        header.className = "grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider";
+        header.innerHTML = `
+          <div class="col-span-1">Timeslot (9 AM - 12 AM)</div>
+          <div class="col-span-1 text-center">Standard Main Court (₱600/hr)</div>
+          <div class="col-span-1 text-center">AC Range 1 + Machine (₱400/hr)</div>
+          <div class="col-span-1 text-center">AC Range 2 + Machine (₱400/hr)</div>
+        `;
 
-        const timeCol = document.createElement('div');
-        timeCol.className = "col-span-1 font-bold text-slate-200 text-xs flex items-center gap-1.5";
-        timeCol.innerHTML = `<i class="fa-regular fa-clock text-lime-400"></i> ${timeSlot}`;
-        row.appendChild(timeCol);
+        const dateKey = getDateKey();
+        const dayData = activeDb[dateKey] || {};
+        const realDayData = realDb[dateKey] || {};
 
-        COURTS.forEach(court => {
-          const courtCol = document.createElement('div');
-          courtCol.className = "col-span-1 flex justify-center";
+        OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
+          const row = document.createElement('div');
+          row.className = "grid grid-cols-4 gap-3 py-3 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
 
-          const slotKey = `${court.id}_${timeIdx}`;
-          const rawStatus = dayData[slotKey] || 'available';
+          const timeCol = document.createElement('div');
+          timeCol.className = "col-span-1 font-bold text-slate-200 text-xs flex items-center gap-1.5";
+          timeCol.innerHTML = `<i class="fa-regular fa-clock text-lime-400"></i> ${timeSlot}`;
+          row.appendChild(timeCol);
 
-          let statusType = 'available';
-          let minutesLeft = 15;
+          COURTS.forEach(court => {
+            const courtCol = document.createElement('div');
+            courtCol.className = "col-span-1 flex justify-center";
 
-          if (rawStatus === 'reserved') {
-            statusType = 'reserved';
-            reservedCount++;
-          } else if (typeof rawStatus === 'object' && rawStatus.status === 'pencil') {
-            statusType = 'pencil';
-            pencilCount++;
-            minutesLeft = Math.max(0, Math.ceil((rawStatus.expiresAt - Date.now()) / 60000));
-          } else {
-            availCount++;
-          }
+            const slotKey = `${court.id}_${timeIdx}`;
+            const currentStatus = dayData[slotKey] || 'available';
+            const realStatus = realDayData[slotKey] || 'available';
 
-          const slotBtn = document.createElement('button');
-          slotBtn.className = `w-full max-w-[170px] py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-between shadow-sm ${
-            statusType === 'available' ? 'status-available hover:scale-[1.02]' :
-            statusType === 'pencil' ? 'status-pencil' : 'status-reserved'
-          }`;
+            if (currentStatus === 'reserved') reservedCount++;
+            else availCount++;
 
-          const isCustomerSelected = customerSelections.some(s => s.dateKey === dateKey && s.slotKey === slotKey);
-          if (isCustomerSelected) {
-            slotBtn.classList.add('ring-2', 'ring-lime-400');
-          }
+            const isPendingChange = (pendingAdminDb !== null) && (currentStatus !== realStatus);
 
-          let labelHtml = '';
-          if (statusType === 'available') {
-            labelHtml = `<i class="fa-solid fa-circle-check text-lime-400"></i> Available`;
-          } else if (statusType === 'pencil') {
-            labelHtml = `<i class="fa-solid fa-pencil text-amber-400"></i> Pencil (${minutesLeft}m)`;
-          } else {
-            labelHtml = `<i class="fa-solid fa-circle-xmark text-red-400"></i> Reserved`;
-          }
+            const slotBtn = document.createElement('button');
+            slotBtn.className = `w-full max-w-[170px] py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-between shadow-sm ${
+              currentStatus === 'available' ? 'status-available hover:scale-[1.02]' : 'status-reserved'
+            } ${isPendingChange ? 'status-pending-change' : ''}`;
 
-          slotBtn.innerHTML = `
-            <span class="flex items-center gap-1">${labelHtml}</span>
-            <span class="opacity-75 text-[10px]">₱${court.price}</span>
-          `;
+            const isCustomerSelected = customerSelections.some(s => s.dateKey === dateKey && s.slotKey === slotKey);
+            if (isCustomerSelected) {
+              slotBtn.classList.add('ring-2', 'ring-lime-400');
+            }
 
-          slotBtn.onclick = () => handleSlotClick(dateKey, slotKey, court, timeSlot, statusType);
+            slotBtn.innerHTML = `
+              <span class="flex items-center gap-1">
+                <i class="fa-solid ${currentStatus === 'available' ? 'fa-circle-check text-lime-400' : 'fa-circle-xmark text-red-400'}"></i>
+                ${currentStatus === 'available' ? 'Available' : 'Reserved'}
+              </span>
+              <span class="opacity-75 text-[10px]">₱${court.price}</span>
+            `;
 
-          courtCol.appendChild(slotBtn);
-          row.appendChild(courtCol);
+            slotBtn.onclick = () => handleSlotClick(dateKey, slotKey, court, timeSlot, currentStatus);
+
+            courtCol.appendChild(slotBtn);
+            row.appendChild(courtCol);
+          });
+
+          grid.appendChild(row);
         });
 
-        grid.appendChild(row);
-      });
+      } else {
+        // --- WEEKLY SUMMARY MATRIX VIEW ---
+        header.className = "grid grid-cols-8 gap-2 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider";
+        
+        const startOfWeek = new Date(selectedDate);
+        startOfWeek.setDate(selectedDate.getDate() - startOfWeek.getDay());
+
+        const weekDays = [];
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(startOfWeek);
+          d.setDate(startOfWeek.getDate() + i);
+          weekDays.push(d);
+        }
+
+        let headerHtml = `<div class="col-span-1">Timeslot</div>`;
+        weekDays.forEach(wd => {
+          const dayName = wd.toLocaleDateString('en-US', { weekday: 'short' });
+          headerHtml += `<div class="col-span-1 text-center">${dayName}<br/><span class="text-[10px] text-lime-400">${wd.getDate()}</span></div>`;
+        });
+        header.innerHTML = headerHtml;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
+          const row = document.createElement('div');
+          row.className = "grid grid-cols-8 gap-2 py-2.5 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
+
+          const timeCol = document.createElement('div');
+          timeCol.className = "col-span-1 font-bold text-slate-200 text-[11px] truncate";
+          timeCol.innerText = timeSlot.split(' - ')[0];
+          row.appendChild(timeCol);
+
+          weekDays.forEach(wd => {
+            wd.setHours(0, 0, 0, 0);
+            const dKey = getDateKey(wd);
+            const isPast = wd.getTime() < today.getTime();
+            const dayData = activeDb[dKey] || {};
+
+            const slotKey = `main_${timeIdx}`;
+            const currentStatus = dayData[slotKey] || 'available';
+
+            if (currentStatus === 'reserved') reservedCount++;
+            else availCount++;
+
+            const dayCellCol = document.createElement('div');
+            dayCellCol.className = "col-span-1 flex justify-center";
+
+            const cellBtn = document.createElement('button');
+            if (isPast) {
+              cellBtn.className = "w-full py-1.5 rounded-lg bg-slate-950 text-slate-600 text-[10px] cursor-not-allowed opacity-30 border border-slate-900";
+              cellBtn.disabled = true;
+              cellBtn.innerText = "Past";
+            } else {
+              const badgeClass = currentStatus === 'reserved' ? 'status-reserved' : 'status-available';
+              const badgeText = currentStatus === 'reserved' ? 'Res' : 'Avail';
+
+              cellBtn.className = `w-full py-1.5 px-1 rounded-lg text-[10px] font-bold transition ${badgeClass} hover:opacity-80`;
+              cellBtn.innerText = badgeText;
+
+              cellBtn.onclick = () => {
+                selectedDate = new Date(wd);
+                switchCalendarView('month');
+                updateSelectedDateDisplay();
+                renderCalendar();
+                renderScheduleGrid();
+              };
+            }
+
+            dayCellCol.appendChild(cellBtn);
+            row.appendChild(dayCellCol);
+          });
+
+          grid.appendChild(row);
+        });
+      }
 
       document.getElementById('statAvailable').innerText = availCount;
-      document.getElementById('statPencil').innerText = pencilCount;
       document.getElementById('statReserved').innerText = reservedCount;
     }
 
-    function handleSlotClick(dateKey, slotKey, court, timeSlot, statusType) {
+    function handleSlotClick(dateKey, slotKey, court, timeSlot, currentStatus) {
       if (isAdmin) {
-        const db = getStoredData();
-        if (!db[dateKey]) db[dateKey] = {};
+        // Admin Mode: Buffer change in pendingAdminDb instead of auto-saving
+        if (!pendingAdminDb) {
+          pendingAdminDb = JSON.parse(JSON.stringify(getStoredData()));
+        }
 
-        const newStatus = statusType === 'available' ? 'reserved' : 'available';
-        db[dateKey][slotKey] = newStatus;
+        if (!pendingAdminDb[dateKey]) pendingAdminDb[dateKey] = {};
 
-        saveStoredData(db);
+        const newStatus = currentStatus === 'available' ? 'reserved' : 'available';
+        pendingAdminDb[dateKey][slotKey] = newStatus;
+
+        showAdminSaveBar();
         renderScheduleGrid();
         renderCalendar();
       } else {
-        if (statusType === 'reserved') {
+        if (currentStatus === 'reserved') {
           alert("This slot is already reserved.");
-          return;
-        }
-        if (statusType === 'pencil') {
-          alert("This slot is temporarily pencil booked for 15 minutes by another user.");
           return;
         }
 
@@ -824,26 +908,65 @@
       container.innerHTML = html;
     }
 
+    // ADMIN SAVE / DISCARD ENGINE
     function bulkSetStatus(status) {
       if (!isAdmin) return;
-      const db = getStoredData();
+      if (!pendingAdminDb) {
+        pendingAdminDb = JSON.parse(JSON.stringify(getStoredData()));
+      }
+
       const dateKey = getDateKey();
-      if (!db[dateKey]) db[dateKey] = {};
+      if (!pendingAdminDb[dateKey]) pendingAdminDb[dateKey] = {};
 
       OPERATING_HOURS.forEach((_, timeIdx) => {
         COURTS.forEach(court => {
           const slotKey = `${court.id}_${timeIdx}`;
-          db[dateKey][slotKey] = status;
+          pendingAdminDb[dateKey][slotKey] = status;
         });
       });
 
-      saveStoredData(db);
+      showAdminSaveBar();
+      renderScheduleGrid();
+      renderCalendar();
+    }
+
+    function showAdminSaveBar() {
+      document.getElementById('adminSaveBar').classList.remove('hidden');
+    }
+
+    function hideAdminSaveBar() {
+      document.getElementById('adminSaveBar').classList.add('hidden');
+    }
+
+    function saveAdminChanges() {
+      if (pendingAdminDb) {
+        saveStoredData(pendingAdminDb);
+        pendingAdminDb = null;
+      }
+      hideAdminSaveBar();
+      renderScheduleGrid();
+      renderCalendar();
+      alert("Schedule updates saved successfully!");
+    }
+
+    function discardAdminChanges() {
+      pendingAdminDb = null;
+      hideAdminSaveBar();
       renderScheduleGrid();
       renderCalendar();
     }
 
     function openAdminModal() {
       if (isAdmin) {
+        // Exit admin mode
+        if (pendingAdminDb) {
+          if (!confirm("You have unsaved changes. Exit without saving?")) {
+            return;
+          }
+          pendingAdminDb = null;
+          hideAdminSaveBar();
+        }
+
         isAdmin = false;
         document.getElementById('adminBtnText').innerText = "Admin Access";
         document.getElementById('burgerModeBadge').innerText = "Customer (Read-Only)";
@@ -885,24 +1008,12 @@
       }, 2000);
     }
 
+    // SUBMIT BOOKING WITH MESSENGER ENHANCED REDIRECT
     function sendToMessenger() {
       if (customerSelections.length === 0) {
         alert("Please select at least one available court timeslot first!");
         return;
       }
-
-      const db = getStoredData();
-      const expiresAt = Date.now() + PENCIL_DURATION_MS;
-
-      customerSelections.forEach(sel => {
-        if (!db[sel.dateKey]) db[sel.dateKey] = {};
-        db[sel.dateKey][sel.slotKey] = {
-          status: 'pencil',
-          expiresAt: expiresAt
-        };
-      });
-
-      saveStoredData(db);
 
       let message = "Hi re:Serve pickleball court! I would like to book the following reservation:\n\n";
       let total = 0;
@@ -912,19 +1023,34 @@
         total += sel.price;
       });
 
-      message += `Total Fee: ₱${total}\n\nGCash Payment Number: 09178250508 (BR**N V.)\nI have pencil-booked these slots for 15 mins and will send my GCash proof shortly!`;
+      message += `Total Fee: ₱${total}\n\nGCash Payment Number: 09178250508 (BR**N V.)\nPolicy Note: I understand that schedules follow a First Paid, First Serve policy. I am sending my GCash proof now. Thank you!`;
 
+      // Copy text to clipboard
       navigator.clipboard.writeText(message);
 
+      const encodedMsg = encodeURIComponent(message);
+      const targetUrl = `https://m.me/${FB_PAGE_ID}?text=${encodedMsg}`;
+
+      // Update Modal Link
+      const directBtn = document.getElementById('messengerDirectBtn');
+      directBtn.href = targetUrl;
+
+      // Clear selection summary
       customerSelections = [];
       updateCustomerSummary();
       renderScheduleGrid();
-      renderCalendar();
 
-      alert("Slots pencil booked for 15 minutes! Opening Facebook Messenger...");
+      // Open Modal Instructions & attempt direct pop-up open
+      document.getElementById('redirectModal').classList.remove('hidden');
 
-      const encodedMsg = encodeURIComponent(message);
-      window.open(`https://m.me/${FB_PAGE_ID}?text=${encodedMsg}`, '_blank');
+      // Attempt immediate redirection
+      setTimeout(() => {
+        window.open(targetUrl, '_blank');
+      }, 300);
+    }
+
+    function closeRedirectModal() {
+      document.getElementById('redirectModal').classList.add('hidden');
     }
   </script>
 </body>
