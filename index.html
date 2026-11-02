@@ -173,7 +173,7 @@
             <i class="fa-solid fa-calendar-days text-lime-400"></i>
             Select Present or Future Date / View
           </h2>
-          <p class="text-xs text-slate-400">Past dates are disabled. Switch between Month View or Weekly Summary Matrix below.</p>
+          <p class="text-xs text-slate-400">Past dates are disabled. Switch between Month View or Week View below.</p>
         </div>
 
         <!-- View Switcher (Monthly vs Weekly) -->
@@ -182,7 +182,7 @@
             <i class="fa-solid fa-calendar-grid"></i> Month View
           </button>
           <button id="viewWeekBtn" onclick="switchCalendarView('week')" class="px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition">
-            <i class="fa-solid fa-calendar-week"></i> Week Summary View
+            <i class="fa-solid fa-calendar-week"></i> Week View
           </button>
         </div>
       </div>
@@ -211,7 +211,7 @@
         <div id="monthGrid" class="grid grid-cols-7 gap-1.5 text-xs"></div>
       </div>
 
-      <!-- WEEK SUMMARY NAVIGATOR & BOTTOM OVERVIEW CALENDAR -->
+      <!-- WEEK VIEW NAVIGATOR & BOTTOM OVERVIEW CALENDAR -->
       <div id="weekCalendarContainer" class="hidden space-y-4 pt-2">
         <div class="flex items-center justify-between px-1">
           <button onclick="changeWeek(-1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
@@ -225,29 +225,19 @@
 
         <div class="space-y-2">
           <div class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-            <i class="fa-solid fa-calendar-week text-lime-400"></i> Weekly Overview Calendar (Click day to jump)
+            <i class="fa-solid fa-calendar-week text-lime-400"></i> Select Day of the Week:
           </div>
           <div id="bottomWeekOverviewGrid" class="grid grid-cols-1 sm:grid-cols-7 gap-2"></div>
         </div>
       </div>
 
-      <!-- Selected Date Banner & Stats -->
+      <!-- Selected Date Banner -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800/80">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-clock text-lime-400 text-lg"></i>
           <div>
             <span class="text-xs text-slate-400 block" id="dateBannerTitle">Selected Date Schedule:</span>
             <span id="selectedDateDisplay" class="text-sm font-bold text-white">---</span>
-          </div>
-        </div>
-
-        <!-- STATS BAR -->
-        <div class="flex flex-wrap items-center gap-2 text-xs">
-          <div class="px-2 py-0.5 rounded-lg bg-lime-400/10 border border-lime-400/20 text-lime-400">
-            <span class="font-bold" id="statAvailable">0</span> Available
-          </div>
-          <div class="px-2 py-0.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
-            <span class="font-bold" id="statReserved">0</span> Reserved
           </div>
         </div>
 
@@ -263,7 +253,7 @@
       </div>
     </div>
 
-    <!-- SCHEDULE MATRIX TABLE -->
+    <!-- SCHEDULE MATRIX TABLE (IDENTICAL FOR BOTH MONTH AND WEEK VIEWS) -->
     <div class="glass-card rounded-2xl p-5 border border-slate-800 shadow-xl overflow-x-auto">
       <div id="matrixContainerWrapper" class="min-w-[700px]">
         <div id="matrixHeader" class="grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider">
@@ -457,10 +447,10 @@
 
     let isAdmin = false;
     let selectedDate = new Date();
-    let calendarView = 'month';
+    let calendarView = 'month'; // 'month' or 'week'
     let displayedMonthDate = new Date();
     let customerSelections = [];
-    let pendingAdminDb = null; // Holds unsaved admin changes
+    let pendingAdminDb = null;
 
     const LOCAL_STORAGE_KEY = "reserve_pickleball_schedule_db_v2";
 
@@ -510,7 +500,7 @@
         monthBtn.className = "px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition";
         weekContainer.classList.remove('hidden');
         monthContainer.classList.add('hidden');
-        document.getElementById('dateBannerTitle').innerText = "Weekly Summary Range:";
+        document.getElementById('dateBannerTitle').innerText = "Selected Date Schedule:";
       }
       renderCalendar();
       renderScheduleGrid();
@@ -602,11 +592,11 @@
 
       weekLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
-      const db = pendingAdminDb || getStoredData();
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const currentSelectedKey = getDateKey(selectedDate);
 
       for (let i = 0; i < 7; i++) {
         const wd = new Date(startOfWeek);
@@ -616,44 +606,31 @@
         const dKey = getDateKey(wd);
         const isToday = wd.getTime() === today.getTime();
         const isPast = wd.getTime() < today.getTime();
-        const dayData = db[dKey] || {};
-
-        let dayReserved = 0;
-        let dayAvailable = 0;
-
-        OPERATING_HOURS.forEach((_, tIdx) => {
-          COURTS.forEach(court => {
-            const sKey = `${court.id}_${tIdx}`;
-            const status = dayData[sKey] || 'available';
-            if (status === 'reserved') dayReserved++;
-            else dayAvailable++;
-          });
-        });
+        const isSelected = dKey === currentSelectedKey;
 
         const card = document.createElement('button');
         if (isPast) {
-          card.className = "p-2.5 rounded-xl border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 text-left flex flex-col justify-between";
+          card.className = "p-3 rounded-xl border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 text-center flex flex-col items-center justify-center";
           card.disabled = true;
         } else {
-          card.className = `p-2.5 rounded-xl border transition text-left flex flex-col justify-between bg-slate-900 border-slate-800 hover:border-lime-400/50 hover:bg-slate-800/80 ${isToday ? 'border-lime-400/50 bg-slate-800 text-lime-400' : 'text-slate-300'}`;
+          card.className = `p-3 rounded-xl border transition text-center flex flex-col items-center justify-center ${
+            isSelected 
+              ? 'cal-day-active border-lime-400 shadow-md' 
+              : isToday 
+                ? 'bg-slate-800 text-lime-400 border-lime-400/50' 
+                : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+          }`;
           card.onclick = () => {
             selectedDate = new Date(wd);
-            switchCalendarView('month');
             updateSelectedDateDisplay();
-            renderCalendar();
+            renderWeekSummaryBarAndOverview();
             renderScheduleGrid();
           };
         }
 
         card.innerHTML = `
-          <div class="flex justify-between items-center w-full mb-1">
-            <span class="text-[10px] uppercase font-bold opacity-75">${dayNames[i]}</span>
-            <span class="text-xs font-black">${wd.getDate()}</span>
-          </div>
-          <div class="space-y-0.5 text-[10px] font-semibold w-full">
-            <div class="text-lime-400 flex justify-between"><span>Avail:</span> <span>${dayAvailable}</span></div>
-            <div class="text-red-400 flex justify-between"><span>Res:</span> <span>${dayReserved}</span></div>
-          </div>
+          <span class="text-[10px] uppercase font-bold opacity-75">${dayNames[i]}</span>
+          <span class="text-sm font-extrabold mt-0.5">${wd.getDate()}</span>
         `;
 
         overviewGrid.appendChild(card);
@@ -662,26 +639,17 @@
 
     function changeWeek(delta) {
       selectedDate.setDate(selectedDate.getDate() + (delta * 7));
-      displayedMonthDate = new Date(selectedDate);
       updateSelectedDateDisplay();
       renderCalendar();
       renderScheduleGrid();
     }
 
     function updateSelectedDateDisplay() {
-      if (calendarView === 'month') {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('selectedDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
-      } else {
-        const startOfWeek = new Date(selectedDate);
-        startOfWeek.setDate(selectedDate.getDate() - startOfWeek.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        document.getElementById('selectedDateDisplay').innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} to ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-      }
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('selectedDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
     }
 
-    // RENDER SCHEDULE MATRIX (DAY VIEW vs WEEK SUMMARY MATRIX VIEW)
+    // RENDER SCHEDULE MATRIX (SAME FOR BOTH MONTH AND WEEK VIEWS)
     function renderScheduleGrid() {
       const grid = document.getElementById('scheduleGrid');
       const header = document.getElementById('matrixHeader');
@@ -693,152 +661,70 @@
       let availCount = 0;
       let reservedCount = 0;
 
-      if (calendarView === 'month') {
-        header.className = "grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider";
-        header.innerHTML = `
-          <div class="col-span-1">Timeslot (9 AM - 12 AM)</div>
-          <div class="col-span-1 text-center">Standard Main Court (₱600/hr)</div>
-          <div class="col-span-1 text-center">AC Range 1 + Machine (₱400/hr)</div>
-          <div class="col-span-1 text-center">AC Range 2 + Machine (₱400/hr)</div>
-        `;
+      header.className = "grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider";
+      header.innerHTML = `
+        <div class="col-span-1">Timeslot (9 AM - 12 AM)</div>
+        <div class="col-span-1 text-center">Standard Main Court (₱600/hr)</div>
+        <div class="col-span-1 text-center">AC Range 1 + Machine (₱400/hr)</div>
+        <div class="col-span-1 text-center">AC Range 2 + Machine (₱400/hr)</div>
+      `;
 
-        const dateKey = getDateKey();
-        const dayData = activeDb[dateKey] || {};
-        const realDayData = realDb[dateKey] || {};
+      const dateKey = getDateKey();
+      const dayData = activeDb[dateKey] || {};
+      const realDayData = realDb[dateKey] || {};
 
-        OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
-          const row = document.createElement('div');
-          row.className = "grid grid-cols-4 gap-3 py-3 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
+      OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
+        const row = document.createElement('div');
+        row.className = "grid grid-cols-4 gap-3 py-3 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
 
-          const timeCol = document.createElement('div');
-          timeCol.className = "col-span-1 font-bold text-slate-200 text-xs flex items-center gap-1.5";
-          timeCol.innerHTML = `<i class="fa-regular fa-clock text-lime-400"></i> ${timeSlot}`;
-          row.appendChild(timeCol);
+        const timeCol = document.createElement('div');
+        timeCol.className = "col-span-1 font-bold text-slate-200 text-xs flex items-center gap-1.5";
+        timeCol.innerHTML = `<i class="fa-regular fa-clock text-lime-400"></i> ${timeSlot}`;
+        row.appendChild(timeCol);
 
-          COURTS.forEach(court => {
-            const courtCol = document.createElement('div');
-            courtCol.className = "col-span-1 flex justify-center";
+        COURTS.forEach(court => {
+          const courtCol = document.createElement('div');
+          courtCol.className = "col-span-1 flex justify-center";
 
-            const slotKey = `${court.id}_${timeIdx}`;
-            const currentStatus = dayData[slotKey] || 'available';
-            const realStatus = realDayData[slotKey] || 'available';
+          const slotKey = `${court.id}_${timeIdx}`;
+          const currentStatus = dayData[slotKey] || 'available';
+          const realStatus = realDayData[slotKey] || 'available';
 
-            if (currentStatus === 'reserved') reservedCount++;
-            else availCount++;
+          if (currentStatus === 'reserved') reservedCount++;
+          else availCount++;
 
-            const isPendingChange = (pendingAdminDb !== null) && (currentStatus !== realStatus);
+          const isPendingChange = (pendingAdminDb !== null) && (currentStatus !== realStatus);
 
-            const slotBtn = document.createElement('button');
-            slotBtn.className = `w-full max-w-[170px] py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-between shadow-sm ${
-              currentStatus === 'available' ? 'status-available hover:scale-[1.02]' : 'status-reserved'
-            } ${isPendingChange ? 'status-pending-change' : ''}`;
+          const slotBtn = document.createElement('button');
+          slotBtn.className = `w-full max-w-[170px] py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-between shadow-sm ${
+            currentStatus === 'available' ? 'status-available hover:scale-[1.02]' : 'status-reserved'
+          } ${isPendingChange ? 'status-pending-change' : ''}`;
 
-            const isCustomerSelected = customerSelections.some(s => s.dateKey === dateKey && s.slotKey === slotKey);
-            if (isCustomerSelected) {
-              slotBtn.classList.add('ring-2', 'ring-lime-400');
-            }
+          const isCustomerSelected = customerSelections.some(s => s.dateKey === dateKey && s.slotKey === slotKey);
+          if (isCustomerSelected) {
+            slotBtn.classList.add('ring-2', 'ring-lime-400');
+          }
 
-            slotBtn.innerHTML = `
-              <span class="flex items-center gap-1">
-                <i class="fa-solid ${currentStatus === 'available' ? 'fa-circle-check text-lime-400' : 'fa-circle-xmark text-red-400'}"></i>
-                ${currentStatus === 'available' ? 'Available' : 'Reserved'}
-              </span>
-              <span class="opacity-75 text-[10px]">₱${court.price}</span>
-            `;
+          slotBtn.innerHTML = `
+            <span class="flex items-center gap-1">
+              <i class="fa-solid ${currentStatus === 'available' ? 'fa-circle-check text-lime-400' : 'fa-circle-xmark text-red-400'}"></i>
+              ${currentStatus === 'available' ? 'Available' : 'Reserved'}
+            </span>
+            <span class="opacity-75 text-[10px]">₱${court.price}</span>
+          `;
 
-            slotBtn.onclick = () => handleSlotClick(dateKey, slotKey, court, timeSlot, currentStatus);
+          slotBtn.onclick = () => handleSlotClick(dateKey, slotKey, court, timeSlot, currentStatus);
 
-            courtCol.appendChild(slotBtn);
-            row.appendChild(courtCol);
-          });
-
-          grid.appendChild(row);
+          courtCol.appendChild(slotBtn);
+          row.appendChild(courtCol);
         });
 
-      } else {
-        // --- WEEKLY SUMMARY MATRIX VIEW ---
-        header.className = "grid grid-cols-8 gap-2 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider";
-        
-        const startOfWeek = new Date(selectedDate);
-        startOfWeek.setDate(selectedDate.getDate() - startOfWeek.getDay());
-
-        const weekDays = [];
-        for (let i = 0; i < 7; i++) {
-          const d = new Date(startOfWeek);
-          d.setDate(startOfWeek.getDate() + i);
-          weekDays.push(d);
-        }
-
-        let headerHtml = `<div class="col-span-1">Timeslot</div>`;
-        weekDays.forEach(wd => {
-          const dayName = wd.toLocaleDateString('en-US', { weekday: 'short' });
-          headerHtml += `<div class="col-span-1 text-center">${dayName}<br/><span class="text-[10px] text-lime-400">${wd.getDate()}</span></div>`;
-        });
-        header.innerHTML = headerHtml;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
-          const row = document.createElement('div');
-          row.className = "grid grid-cols-8 gap-2 py-2.5 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
-
-          const timeCol = document.createElement('div');
-          timeCol.className = "col-span-1 font-bold text-slate-200 text-[11px] truncate";
-          timeCol.innerText = timeSlot.split(' - ')[0];
-          row.appendChild(timeCol);
-
-          weekDays.forEach(wd => {
-            wd.setHours(0, 0, 0, 0);
-            const dKey = getDateKey(wd);
-            const isPast = wd.getTime() < today.getTime();
-            const dayData = activeDb[dKey] || {};
-
-            const slotKey = `main_${timeIdx}`;
-            const currentStatus = dayData[slotKey] || 'available';
-
-            if (currentStatus === 'reserved') reservedCount++;
-            else availCount++;
-
-            const dayCellCol = document.createElement('div');
-            dayCellCol.className = "col-span-1 flex justify-center";
-
-            const cellBtn = document.createElement('button');
-            if (isPast) {
-              cellBtn.className = "w-full py-1.5 rounded-lg bg-slate-950 text-slate-600 text-[10px] cursor-not-allowed opacity-30 border border-slate-900";
-              cellBtn.disabled = true;
-              cellBtn.innerText = "Past";
-            } else {
-              const badgeClass = currentStatus === 'reserved' ? 'status-reserved' : 'status-available';
-              const badgeText = currentStatus === 'reserved' ? 'Res' : 'Avail';
-
-              cellBtn.className = `w-full py-1.5 px-1 rounded-lg text-[10px] font-bold transition ${badgeClass} hover:opacity-80`;
-              cellBtn.innerText = badgeText;
-
-              cellBtn.onclick = () => {
-                selectedDate = new Date(wd);
-                switchCalendarView('month');
-                updateSelectedDateDisplay();
-                renderCalendar();
-                renderScheduleGrid();
-              };
-            }
-
-            dayCellCol.appendChild(cellBtn);
-            row.appendChild(dayCellCol);
-          });
-
-          grid.appendChild(row);
-        });
-      }
-
-      document.getElementById('statAvailable').innerText = availCount;
-      document.getElementById('statReserved').innerText = reservedCount;
+        grid.appendChild(row);
+      });
     }
 
     function handleSlotClick(dateKey, slotKey, court, timeSlot, currentStatus) {
       if (isAdmin) {
-        // Admin Mode: Buffer change in pendingAdminDb instead of auto-saving
         if (!pendingAdminDb) {
           pendingAdminDb = JSON.parse(JSON.stringify(getStoredData()));
         }
@@ -850,7 +736,6 @@
 
         showAdminSaveBar();
         renderScheduleGrid();
-        renderCalendar();
       } else {
         if (currentStatus === 'reserved') {
           alert("This slot is already reserved.");
@@ -908,7 +793,6 @@
       container.innerHTML = html;
     }
 
-    // ADMIN SAVE / DISCARD ENGINE
     function bulkSetStatus(status) {
       if (!isAdmin) return;
       if (!pendingAdminDb) {
@@ -927,7 +811,6 @@
 
       showAdminSaveBar();
       renderScheduleGrid();
-      renderCalendar();
     }
 
     function showAdminSaveBar() {
@@ -945,7 +828,6 @@
       }
       hideAdminSaveBar();
       renderScheduleGrid();
-      renderCalendar();
       alert("Schedule updates saved successfully!");
     }
 
@@ -953,12 +835,10 @@
       pendingAdminDb = null;
       hideAdminSaveBar();
       renderScheduleGrid();
-      renderCalendar();
     }
 
     function openAdminModal() {
       if (isAdmin) {
-        // Exit admin mode
         if (pendingAdminDb) {
           if (!confirm("You have unsaved changes. Exit without saving?")) {
             return;
@@ -1008,7 +888,6 @@
       }, 2000);
     }
 
-    // SUBMIT BOOKING WITH MESSENGER ENHANCED REDIRECT
     function sendToMessenger() {
       if (customerSelections.length === 0) {
         alert("Please select at least one available court timeslot first!");
@@ -1025,25 +904,20 @@
 
       message += `Total Fee: ₱${total}\n\nGCash Payment Number: 09178250508 (BR**N V.)\nPolicy Note: I understand that schedules follow a First Paid, First Serve policy. I am sending my GCash proof now. Thank you!`;
 
-      // Copy text to clipboard
       navigator.clipboard.writeText(message);
 
       const encodedMsg = encodeURIComponent(message);
       const targetUrl = `https://m.me/${FB_PAGE_ID}?text=${encodedMsg}`;
 
-      // Update Modal Link
       const directBtn = document.getElementById('messengerDirectBtn');
       directBtn.href = targetUrl;
 
-      // Clear selection summary
       customerSelections = [];
       updateCustomerSummary();
       renderScheduleGrid();
 
-      // Open Modal Instructions & attempt direct pop-up open
       document.getElementById('redirectModal').classList.remove('hidden');
 
-      // Attempt immediate redirection
       setTimeout(() => {
         window.open(targetUrl, '_blank');
       }, 300);
