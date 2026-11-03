@@ -477,10 +477,22 @@
     });
 
     async function fetchCloudSchedule() {
-      if (SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
-        console.warn("Google Apps Script URL is not configured yet.");
-        return;
-      }
+    try {
+    const response = await fetch(`${SCRIPT_URL}?action=getSchedule`, {
+      method: "GET",
+      redirect: "follow"
+    });
+    
+    if (!response.ok) throw new Error("Network response was not ok");
+    
+    const data = await response.json();
+    cloudDb = data;
+    updateSyncStatus(true);
+  } catch (err) {
+    console.error("Cloud fetch error:", err);
+    updateSyncStatus(false);
+  }
+}
 
       document.getElementById('syncText').innerText = "Syncing...";
       try {
