@@ -1,984 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>re:Serve pickleball court | Court Rental & Schedule</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>re:Serve Pickleball Court Booking</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              lime: '#a3e635',
-              dark: '#0f172a',
-              card: '#1e293b',
-              accent: '#22c55e',
-              reserved: '#ef4444'
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    .glass-card {
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .status-available {
-      background-color: rgba(163, 230, 53, 0.15);
-      border: 1px solid rgba(163, 230, 53, 0.4);
-      color: #bef264;
-    }
-    .status-reserved {
-      background-color: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #fca5a5;
-    }
-    .status-pending-change {
-      outline: 2px dashed #a3e635;
-      outline-offset: 1px;
-    }
-    .cal-day-active {
-      background-color: #a3e635 !important;
-      color: #0f172a !important;
-      font-weight: bold;
-    }
-  </style>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased pb-24">
+<body class="bg-gray-100 min-h-screen font-sans text-gray-800 pb-12">
 
-  <!-- TOP HEADER NAV -->
-  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      
-      <!-- LOGO & LOCATION -->
+  <!-- Header & Navigation -->
+  <header class="bg-emerald-700 text-white shadow-lg sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-lime-400 to-emerald-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-lime-500/20">
-          rS
-        </div>
+        <i class="fa-solid fa-table-tennis-paddle-ball text-2xl text-emerald-300"></i>
         <div>
-          <h1 class="text-lg font-extrabold tracking-tight text-white flex items-center gap-2">
-            re:<span class="text-lime-400">S</span>erve <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">Pickleball Court</span>
-          </h1>
-          <p class="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-            <i class="fa-solid fa-location-dot text-red-400"></i> 12 Magnolia St. Tanza, Navotas
-          </p>
+          <h1 class="text-xl font-bold leading-tight tracking-wide">re:Serve Pickleball</h1>
+          <p class="text-xs text-emerald-200"><i class="fa-solid fa-location-dot mr-1"></i>12 Magnolia St. Tanza, Navotas</p>
         </div>
       </div>
-
-      <!-- DESKTOP RIGHT ACTIONS & HAMBURGER TOGGLE -->
-      <div class="flex items-center gap-3">
-        <div id="syncIndicator" class="hidden sm:flex text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700 items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="syncText">Live Cloud Sync</span>
-        </div>
-
-        <!-- HAMBURGER BUTTON -->
-        <button onclick="toggleBurgerMenu()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition focus:outline-none">
-          <i class="fa-solid fa-bars text-lg" id="burgerIcon"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- HAMBURGER DROPDOWN MENU -->
-    <div id="burgerDropdown" class="hidden bg-slate-900 border-b border-slate-800 px-4 py-3 space-y-3 transition-all">
-      <div class="flex items-center justify-between py-1 border-b border-slate-800">
-        <span class="text-xs text-slate-400">System Mode:</span>
-        <span id="burgerModeBadge" class="text-xs font-bold text-lime-400">Customer (Read-Only)</span>
-      </div>
-
-      <!-- HIDDEN ADMIN ACCESS BUTTON -->
-      <div class="pt-1">
-        <button id="adminAuthBtn" onclick="openAdminModal(); toggleBurgerMenu();" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-lock text-lime-400"></i>
-          <span id="adminBtnText">Admin Access</span>
+      
+      <!-- Sync & Admin Status Controls -->
+      <div class="flex items-center space-x-3">
+        <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full font-medium bg-amber-500 text-white flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-spinner animate-spin"></i> Initializing...
+        </span>
+        <button id="menuBtn" class="text-white hover:text-emerald-200 focus:outline-none p-1 text-lg">
+          <i class="fa-solid fa-bars"></i>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
-
-    <!-- COURT INFO CARDS & EQUIPMENT RENTALS BANNER -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <!-- Standard Main Court Card -->
-      <div class="glass-card rounded-2xl p-4 border-l-4 border-lime-400 relative overflow-hidden">
-        <div class="flex justify-between items-start">
-          <div>
-            <span class="text-xs font-bold text-lime-400 uppercase tracking-widest">Main Court</span>
-            <h3 class="text-sm font-bold text-white mt-0.5">Standard Main Court</h3>
-          </div>
-          <span class="text-xs bg-lime-400/20 text-lime-300 px-2.5 py-1 rounded-full font-bold border border-lime-400/30">
-            ₱600/hr
-          </span>
-        </div>
-        <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
-          <i class="fa-solid fa-users text-lime-400"></i> Up to <strong>8 Players</strong> max
-        </p>
-      </div>
-
-      <!-- Airconditioned Training Range 1 -->
-      <div class="glass-card rounded-2xl p-4 border-l-4 border-emerald-400 relative overflow-hidden">
-        <div class="flex justify-between items-start">
-          <div>
-            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-              <i class="fa-solid fa-snowflake"></i> AC Range 1
-            </span>
-            <h3 class="text-sm font-bold text-white mt-0.5">Range 1 (Machine + Balls)</h3>
-          </div>
-          <span class="text-xs bg-emerald-400/20 text-emerald-300 px-2.5 py-1 rounded-full font-bold border border-emerald-400/30">
-            ₱400/hr
-          </span>
-        </div>
-        <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
-          <i class="fa-solid fa-user-group text-emerald-400"></i> Up to <strong>4 Players</strong>
-        </p>
-      </div>
-
-      <!-- Airconditioned Training Range 2 -->
-      <div class="glass-card rounded-2xl p-4 border-l-4 border-emerald-400 relative overflow-hidden">
-        <div class="flex justify-between items-start">
-          <div>
-            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-              <i class="fa-solid fa-snowflake"></i> AC Range 2
-            </span>
-            <h3 class="text-sm font-bold text-white mt-0.5">Range 2 (Machine + Balls)</h3>
-          </div>
-          <span class="text-xs bg-emerald-400/20 text-emerald-300 px-2.5 py-1 rounded-full font-bold border border-emerald-400/30">
-            ₱400/hr
-          </span>
-        </div>
-        <p class="text-xs text-slate-400 mt-2 flex items-center gap-1">
-          <i class="fa-solid fa-user-group text-emerald-400"></i> Up to <strong>4 Players</strong>
-        </p>
-      </div>
-
-      <!-- EQUIPMENT RENTAL NOTE CARD -->
-      <div class="glass-card rounded-2xl p-4 border-l-4 border-amber-400 relative overflow-hidden bg-gradient-to-br from-amber-500/10 to-slate-900">
-        <div class="flex justify-between items-start">
-          <div>
-            <span class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1">
-              <i class="fa-solid fa-table-tennis-paddle-ball"></i> Rentals Available
-            </span>
-            <h3 class="text-sm font-bold text-white mt-0.5">Gear & Equipment</h3>
-          </div>
-        </div>
-        <div class="mt-2 text-xs text-slate-300 space-y-1">
-          <p><i class="fa-solid fa-check text-amber-400 mr-1"></i> Paddles: <strong>₱50</strong></p>
-          <p><i class="fa-solid fa-check text-amber-400 mr-1"></i> Balls: <strong>₱100</strong></p>
-        </div>
+  <!-- Main Content Container -->
+  <main class="max-w-4xl mx-auto px-4 mt-6">
+    
+    <!-- Equipment Rental Announcement Banner -->
+    <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-900 p-4 rounded shadow-sm mb-6 flex items-start space-x-3">
+      <i class="fa-solid fa-circle-info text-amber-600 text-xl mt-0.5"></i>
+      <div class="text-sm">
+        <p class="font-semibold">Equipment Rentals Available On-Site</p>
+        <p class="mt-0.5">Paddle rental: <strong>₱50/pc</strong> &bull; Pickleballs: <strong>₱100/pc</strong>. Pay directly at the court counter.</p>
       </div>
     </div>
 
-    <!-- CALENDAR SELECTOR SECTION -->
-    <div class="glass-card rounded-2xl p-5 border border-slate-800 shadow-xl space-y-4">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-800">
+    <!-- Date Navigation Header -->
+    <div class="bg-white rounded-xl shadow-md p-4 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <button id="prevDayBtn" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition">
+          <i class="fa-solid fa-chevron-left mr-1"></i> Prev Day
+        </button>
+        <div class="text-center">
+          <h2 class="text-xs uppercase tracking-wider font-semibold text-emerald-600">Select Date / View</h2>
+          <p id="currentDateDisplay" class="text-lg font-bold text-gray-800">Loading...</p>
+        </div>
+        <button id="nextDayBtn" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition">
+          Next Day <i class="fa-solid fa-chevron-right ml-1"></i>
+        </button>
+      </div>
+
+      <!-- Quick Date Selector Strip -->
+      <div id="calendarStrip" class="flex space-x-2 overflow-x-auto pb-2 scrollbar-thin">
+        <!-- Dynamic Date Buttons rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Pricing Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-emerald-600 flex justify-between items-center">
         <div>
-          <h2 class="text-base font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-calendar-days text-lime-400"></i>
-            Select Date / View
-          </h2>
-          <p class="text-xs text-slate-400">Past dates are disabled. Switch between Month View or Week View below.</p>
+          <h3 class="font-bold text-gray-800">Main Court</h3>
+          <p class="text-xs text-gray-500">Standard rate per hour</p>
         </div>
-
-        <!-- View Switcher (Monthly vs Weekly) -->
-        <div class="flex items-center gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800 self-start md:self-auto">
-          <button id="viewMonthBtn" onclick="switchCalendarView('month')" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-lime-400 text-slate-950 transition">
-            <i class="fa-solid fa-calendar-grid"></i> Month View
-          </button>
-          <button id="viewWeekBtn" onclick="switchCalendarView('week')" class="px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition">
-            <i class="fa-solid fa-calendar-week"></i> Week View
-          </button>
-        </div>
+        <span class="text-lg font-bold text-emerald-700">₱600 / hr</span>
       </div>
-
-      <!-- MONTH CALENDAR CONTAINER -->
-      <div id="monthCalendarContainer" class="space-y-3">
-        <div class="flex items-center justify-between px-1">
-          <button onclick="changeMonth(-1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
-            <i class="fa-solid fa-chevron-left"></i> Prev Month
-          </button>
-          <h3 id="currentMonthYearLabel" class="text-sm font-bold text-lime-400 tracking-wide uppercase"></h3>
-          <button onclick="changeMonth(1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
-            Next Month <i class="fa-solid fa-chevron-right"></i>
-          </button>
-        </div>
-
-        <div class="grid grid-cols-7 gap-1.5 text-center text-xs">
-          <div class="text-slate-500 font-bold py-1">Sun</div>
-          <div class="text-slate-500 font-bold py-1">Mon</div>
-          <div class="text-slate-500 font-bold py-1">Tue</div>
-          <div class="text-slate-500 font-bold py-1">Wed</div>
-          <div class="text-slate-500 font-bold py-1">Thu</div>
-          <div class="text-slate-500 font-bold py-1">Fri</div>
-          <div class="text-slate-500 font-bold py-1">Sat</div>
-        </div>
-        <div id="monthGrid" class="grid grid-cols-7 gap-1.5 text-xs"></div>
-      </div>
-
-      <!-- WEEK VIEW NAVIGATOR & BOTTOM OVERVIEW CALENDAR -->
-      <div id="weekCalendarContainer" class="hidden space-y-4 pt-2">
-        <div class="flex items-center justify-between px-1">
-          <button onclick="changeWeek(-1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
-            <i class="fa-solid fa-chevron-left"></i> Prev Week
-          </button>
-          <span id="currentWeekRangeLabel" class="text-xs font-bold text-lime-400 uppercase tracking-wide"></span>
-          <button onclick="changeWeek(1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition">
-            Next Week <i class="fa-solid fa-chevron-right"></i>
-          </button>
-        </div>
-
-        <div class="space-y-2">
-          <div class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-            <i class="fa-solid fa-calendar-week text-lime-400"></i> Select Day of the Week:
-          </div>
-          <div id="bottomWeekOverviewGrid" class="grid grid-cols-1 sm:grid-cols-7 gap-2"></div>
-        </div>
-      </div>
-
-      <!-- Selected Date Banner -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800/80">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-clock text-lime-400 text-lg"></i>
-          <div>
-            <span class="text-xs text-slate-400 block" id="dateBannerTitle">Selected Date Schedule:</span>
-            <span id="selectedDateDisplay" class="text-sm font-bold text-white">---</span>
-          </div>
-        </div>
-
-        <!-- Admin Bulk Controls -->
-        <div id="adminControls" class="hidden flex items-center gap-2">
-          <button onclick="bulkSetStatus('available')" class="px-2.5 py-1.5 bg-lime-500/20 hover:bg-lime-500/30 text-lime-300 text-xs font-bold rounded-lg border border-lime-500/30 transition">
-            Mark All Available
-          </button>
-          <button onclick="bulkSetStatus('reserved')" class="px-2.5 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs font-bold rounded-lg border border-red-500/30 transition">
-            Mark All Reserved
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- SCHEDULE MATRIX TABLE -->
-    <div class="glass-card rounded-2xl p-5 border border-slate-800 shadow-xl overflow-x-auto">
-      <div id="matrixContainerWrapper" class="min-w-[700px]">
-        <div id="matrixHeader" class="grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider">
-          <div class="col-span-1">Timeslot (9 AM - 12 AM)</div>
-          <div class="col-span-1 text-center">Standard Main Court (₱600/hr)</div>
-          <div class="col-span-1 text-center">AC Range 1 + Machine (₱400/hr)</div>
-          <div class="col-span-1 text-center">AC Range 2 + Machine (₱400/hr)</div>
-        </div>
-
-        <div id="scheduleGrid" class="divide-y divide-slate-800/60 text-sm"></div>
-      </div>
-    </div>
-
-    <!-- PAYMENT & DIRECT MESSENGER BOOKING SECTION -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      
-      <!-- GCash Payment Info Card -->
-      <div class="glass-card rounded-2xl p-6 border border-slate-800 space-y-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-lg shadow-md shadow-blue-600/30">
-              G
-            </div>
-            <div>
-              <h3 class="text-base font-bold text-white">GCash Payment Details</h3>
-              <p class="text-xs text-slate-400">Pay downpayment or full fee via GCash</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-400">Account Name:</span>
-            <span class="text-sm font-bold text-white tracking-wide">BR**N V.</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-400">GCash Mobile No:</span>
-            <span class="text-lg font-extrabold text-lime-400 tracking-wider">09178250508</span>
-          </div>
-          <button onclick="copyGcashNumber()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 rounded-lg border border-slate-700 transition flex items-center justify-center gap-2">
-            <i class="fa-regular fa-copy text-lime-400"></i>
-            <span id="copyBtnText">Copy GCash Number</span>
-          </button>
-        </div>
-
-        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-300 space-y-1">
-          <p class="font-bold flex items-center gap-1.5 text-amber-400">
-            <i class="fa-solid fa-triangle-exclamation"></i> First Paid, First Serve Policy
-          </p>
-          <p class="text-amber-200/90 leading-relaxed">
-            Schedules operate strictly on a <strong>First Paid, First Serve</strong> basis. Send your GCash payment confirmation receipt directly to Messenger to secure your slot!
-          </p>
-        </div>
-      </div>
-
-      <!-- Selected Booking & Messenger Link Card -->
-      <div class="glass-card rounded-2xl p-6 border border-slate-800 flex flex-col justify-between space-y-4">
+      <div class="bg-white p-4 rounded-xl shadow-md border-l-4 border-teal-600 flex justify-between items-center">
         <div>
-          <div class="flex items-center gap-2 text-lime-400 text-sm font-bold mb-1">
-            <i class="fa-brands fa-facebook-messenger text-base"></i>
-            Automatic Messenger Booking
-          </div>
-          <h3 class="text-lg font-bold text-white">Submit booking</h3>
-          <p class="text-xs text-slate-400 mt-1">
-            Select available timeslots above, then click below to draft and send your booking inquiry to our Facebook page.
-          </p>
+          <h3 class="font-bold text-gray-800">AC Ranges 1 & 2</h3>
+          <p class="text-xs text-gray-500">Air-conditioned court rate</p>
+        </div>
+        <span class="text-lg font-bold text-teal-700">₱400 / hr</span>
+      </div>
+    </div>
 
-          <div id="selectedSlotsSummary" class="mt-4 p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-2 min-h-[90px]">
-            <span class="text-slate-500 italic">No timeslots selected yet. Tap any available slot above to select.</span>
+    <!-- Admin Mode Controls Bar (Hidden by default) -->
+    <div id="adminControls" class="hidden bg-slate-800 text-white p-4 rounded-xl shadow-md mb-6 transition-all">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-user-shield text-emerald-400 text-lg"></i>
+          <div>
+            <p class="font-bold text-sm">Admin Mode Active</p>
+            <p class="text-xs text-slate-300">Click slots to toggle status. Remember to save changes below.</p>
           </div>
         </div>
+        <div class="flex space-x-2 w-full sm:w-auto">
+          <button id="markAllAvailBtn" class="flex-1 sm:flex-none text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded font-medium">Mark All Available</button>
+          <button id="markAllResBtn" class="flex-1 sm:flex-none text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded font-medium">Mark All Reserved</button>
+        </div>
+      </div>
+    </div>
 
-        <div class="pt-2">
-          <button onclick="sendToMessenger()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2">
-            <i class="fa-brands fa-facebook-messenger text-lg"></i>
-            Submit booking
-          </button>
+    <!-- Court Schedule Grid Container -->
+    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-20">
+      <div class="flex items-center justify-between mb-4 border-b pb-3">
+        <h3 class="font-bold text-gray-800 flex items-center">
+          <i class="fa-solid fa-clock text-emerald-600 mr-2"></i> Hourly Court Availability
+        </h3>
+        <div class="flex items-center space-x-4 text-xs">
+          <span class="flex items-center"><span class="w-3 h-3 bg-emerald-100 border border-emerald-500 rounded-sm mr-1.5 inline-block"></span> Available</span>
+          <span class="flex items-center"><span class="w-3 h-3 bg-rose-100 border border-rose-400 rounded-sm mr-1.5 inline-block"></span> Reserved</span>
         </div>
       </div>
 
+      <!-- Interactive Grid -->
+      <div id="scheduleGrid" class="space-y-3">
+        <!-- Dynamic Schedule Rows Rendered via JS -->
+      </div>
     </div>
-
   </main>
 
-  <!-- STICKY ADMIN SAVE CHANGES BAR -->
-  <div id="adminSaveBar" class="fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t border-lime-400/40 p-4 shadow-2xl hidden transform transition-all duration-300">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <span class="w-3 h-3 rounded-full bg-lime-400 animate-ping"></span>
-        <div>
-          <h4 class="text-sm font-bold text-white">Unsaved Admin Changes</h4>
-          <p class="text-xs text-slate-400">You have pending schedule updates. Save changes to sync with all devices.</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-3 w-full sm:w-auto">
-        <button onclick="discardAdminChanges()" class="w-1/2 sm:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition">
-          Discard Changes
-        </button>
-        <button id="saveChangesBtn" onclick="saveAdminChanges()" class="w-1/2 sm:w-auto px-6 py-2 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-black rounded-xl shadow-lg shadow-lime-400/20 transition flex items-center justify-center gap-2">
+  <!-- Sticky Save Bar for Admin Mode -->
+  <div id="adminSaveBar" class="fixed bottom-0 left-0 right-0 bg-slate-900 text-white p-4 border-t border-slate-700 shadow-2xl hidden z-50">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <p class="text-sm font-medium text-slate-200">Unsaved schedule modifications detected.</p>
+      <div class="flex space-x-3">
+        <button id="discardChangesBtn" class="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition">Discard</button>
+        <button id="saveChangesBtn" class="px-5 py-2 text-sm bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-md transition flex items-center gap-2">
           <i class="fa-solid fa-floppy-disk"></i> Save Changes
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ADMIN PIN MODAL -->
-  <div id="adminModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="glass-card max-w-sm w-full p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-4">
-      <div class="text-center space-y-1">
-        <div class="w-12 h-12 bg-lime-400/10 text-lime-400 rounded-full flex items-center justify-center mx-auto text-xl mb-2">
-          <i class="fa-solid fa-key"></i>
-        </div>
-        <h3 class="text-lg font-bold text-white">Owner / Admin Login</h3>
-        <p class="text-xs text-slate-400">Enter Admin PIN to edit schedules & slot availability.</p>
-      </div>
-
-      <div>
-        <input type="password" id="adminPinInput" placeholder="Enter Admin PIN" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-center text-lg font-bold text-white tracking-widest focus:outline-none focus:border-lime-400">
-        <p id="pinError" class="text-xs text-red-400 text-center mt-2 hidden font-semibold">Incorrect PIN code. Please try again.</p>
-      </div>
-
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeAdminModal()" class="w-1/2 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition">
-          Cancel
-        </button>
-        <button onclick="verifyAdminPin()" class="w-1/2 py-2 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-extrabold rounded-xl transition">
-          Unlock Admin
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- BOOKING REDIRECT MODAL -->
-  <div id="redirectModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="glass-card max-w-md w-full p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-4">
-      <div class="text-center space-y-2">
-        <div class="w-12 h-12 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center mx-auto text-xl">
-          <i class="fa-brands fa-facebook-messenger"></i>
-        </div>
-        <h3 class="text-lg font-bold text-white">Booking Details Copied!</h3>
-        <p class="text-xs text-slate-300 leading-relaxed">
-          Your reservation message has been automatically copied to your clipboard.
-        </p>
-      </div>
-
-      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 space-y-1">
-        <p class="font-semibold text-slate-200">Instructions:</p>
-        <p>If you are not automatically redirected to our Facebook page, please click the button below and paste the copied message into Messenger.</p>
-      </div>
-
-      <div class="pt-2 space-y-2">
-        <a id="messengerDirectBtn" href="#" target="_blank" onclick="closeRedirectModal()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-          <i class="fa-brands fa-facebook-messenger text-base"></i> Open Facebook Messenger
-        </a>
-        <button onclick="closeRedirectModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-semibold rounded-xl transition">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- JAVASCRIPT LOGIC & CLOUD DATABASE INTEGRATION -->
+  <!-- JavaScript Logic -->
   <script>
-    // GOOGLE SHEETS API URL (PASTE YOUR COPIED APPS SCRIPT URL HERE)
+    // Configuration & State
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxA1mRYZlCR329_AdNobnlilPD4jVkbAEy3ox9lK4LEJoyR_mtydsNcj4r3IJsrs9ahOA/exec";
-
     const ADMIN_PIN = "113322";
-    const FB_PAGE_ID = "61595264373061";
-    const DIRECT_MSG_LINK = `https://m.me/${FB_PAGE_ID}`;
 
-    const OPERATING_HOURS = [
-      "09:00 AM - 10:00 AM",
-      "10:00 AM - 11:00 AM",
-      "11:00 AM - 12:00 PM",
-      "12:00 PM - 01:00 PM",
-      "01:00 PM - 02:00 PM",
-      "02:00 PM - 03:00 PM",
-      "03:00 PM - 04:00 PM",
-      "04:00 PM - 05:00 PM",
-      "05:00 PM - 06:00 PM",
-      "06:00 PM - 07:00 PM",
-      "07:00 PM - 08:00 PM",
-      "08:00 PM - 09:00 PM",
-      "09:00 PM - 10:00 PM",
-      "10:00 PM - 11:00 PM",
-      "11:00 PM - 12:00 AM"
+    const timeSlots = [
+      "06:00 AM - 07:00 AM", "07:00 AM - 08:00 AM", "08:00 AM - 09:00 AM",
+      "09:00 AM - 10:00 AM", "10:00 AM - 11:00 AM", "11:00 AM - 12:00 PM",
+      "12:00 PM - 01:00 PM", "01:00 PM - 02:00 PM", "02:00 PM - 03:00 PM",
+      "03:00 PM - 04:00 PM", "04:00 PM - 05:00 PM", "05:00 PM - 06:00 PM",
+      "06:00 PM - 07:00 PM", "07:00 PM - 08:00 PM", "08:00 PM - 09:00 PM",
+      "09:00 PM - 10:00 PM"
     ];
 
-    const COURTS = [
-      { id: "main", name: "Standard Main Court", price: 600, limit: "Up to 8 Players" },
-      { id: "range1", name: "Airconditioned Range 1 (Machine + Balls)", price: 400, limit: "Up to 4 Players" },
-      { id: "range2", name: "Airconditioned Range 2 (Machine + Balls)", price: 400, limit: "Up to 4 Players" }
-    ];
+    const courts = ["Main Court", "AC Range 1", "AC Range 2"];
 
-    let isAdmin = false;
     let selectedDate = new Date();
-    let calendarView = 'month'; // 'month' or 'week'
-    let displayedMonthDate = new Date();
-    let customerSelections = [];
-    let cloudDb = {}; 
+    let cloudDb = {};
     let pendingAdminDb = null;
+    let isAdminMode = false;
 
-    window.addEventListener("DOMContentLoaded", () => {
+    // Helper Functions
+    function formatDateKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function updateSyncStatus(isLive) {
+      const badge = document.getElementById('syncBadge');
+      if (isLive) {
+        badge.className = "text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm";
+        badge.innerHTML = `<i class="fa-solid fa-cloud"></i> Live Cloud Sync`;
+      } else {
+        badge.className = "text-xs px-2.5 py-1 rounded-full font-medium bg-rose-600 text-white flex items-center gap-1.5 shadow-sm";
+        badge.innerHTML = `<i class="fa-solid fa-cloud-slash"></i> Offline Mode`;
+      }
+    }
+
+    // Single Consolidated DOM Initialization & Fetch Routine
+    window.addEventListener("DOMContentLoaded", async () => {
       selectedDate.setHours(0, 0, 0, 0);
       renderCalendar();
       updateSelectedDateDisplay();
+
+      // Await cloud data load first so cloudDb is populated prior to rendering
+      await fetchCloudSchedule();
+
       renderScheduleGrid();
-      fetchCloudSchedule();
+      setupEventListeners();
     });
 
     async function fetchCloudSchedule() {
-    try {
-    const response = await fetch(`${SCRIPT_URL}?action=getSchedule`, {
-      method: "GET",
-      redirect: "follow"
-    });
-    
-    if (!response.ok) throw new Error("Network response was not ok");
-    
-    const data = await response.json();
-    cloudDb = data;
-    updateSyncStatus(true);
-  } catch (err) {
-    console.error("Cloud fetch error:", err);
-    updateSyncStatus(false);
-  }
-}
-
-      document.getElementById('syncText').innerText = "Syncing...";
       try {
-        const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
+        const response = await fetch(`${SCRIPT_URL}?action=getSchedule`, {
+          method: "GET",
+          redirect: "follow"
+        });
+        
+        if (!response.ok) throw new Error("Network response failed");
+        
         const data = await response.json();
-        if (data && typeof data === 'object') {
+        
+        if (data && typeof data === "object" && Object.keys(data).length > 0) {
           cloudDb = data;
-          document.getElementById('syncText').innerText = "Live Cloud Sync";
-          renderScheduleGrid();
-          renderCalendar();
         }
+        
+        updateSyncStatus(true);
       } catch (err) {
         console.error("Cloud fetch error:", err);
-        document.getElementById('syncText').innerText = "Offline Mode";
+        updateSyncStatus(false);
+      } finally {
+        renderScheduleGrid();
       }
     }
 
-    function toggleBurgerMenu() {
-      const dropdown = document.getElementById('burgerDropdown');
-      dropdown.classList.toggle('hidden');
-    }
-
-    function getStoredData() {
-      return cloudDb;
-    }
-
-    function getDateKey(d = selectedDate) {
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
-    }
-
-    function switchCalendarView(view) {
-      calendarView = view;
-      const monthBtn = document.getElementById('viewMonthBtn');
-      const weekBtn = document.getElementById('viewWeekBtn');
-      const monthContainer = document.getElementById('monthCalendarContainer');
-      const weekContainer = document.getElementById('weekCalendarContainer');
-
-      if (view === 'month') {
-        monthBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-lime-400 text-slate-950 transition";
-        weekBtn.className = "px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition";
-        monthContainer.classList.remove('hidden');
-        weekContainer.classList.add('hidden');
-      } else {
-        weekBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-lime-400 text-slate-950 transition";
-        monthBtn.className = "px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition";
-        weekContainer.classList.remove('hidden');
-        monthContainer.classList.add('hidden');
-      }
-      renderCalendar();
-      renderScheduleGrid();
+    // Grid & UI Rendering Logic
+    function updateSelectedDateDisplay() {
+      const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+      document.getElementById('currentDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
     }
 
     function renderCalendar() {
-      if (calendarView === 'month') {
-        renderMonthCalendar();
-      } else {
-        renderWeekSummaryBarAndOverview();
-      }
-    }
+      const strip = document.getElementById('calendarStrip');
+      strip.innerHTML = '';
 
-    function renderMonthCalendar() {
-      const monthGrid = document.getElementById('monthGrid');
-      const monthLabel = document.getElementById('currentMonthYearLabel');
-      monthGrid.innerHTML = "";
-
-      const year = displayedMonthDate.getFullYear();
-      const month = displayedMonthDate.getMonth();
-
-      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      monthLabel.innerText = `${monthNames[month]} ${year}`;
-
-      const firstDayIndex = new Date(year, month, 1).getDay();
-      const totalDays = new Date(year, month + 1, 0).getDate();
-
-      for (let i = 0; i < firstDayIndex; i++) {
-        const empty = document.createElement('div');
-        empty.className = "h-9 rounded-lg bg-slate-900/40 opacity-20";
-        monthGrid.appendChild(empty);
-      }
-
-      const selectedKey = getDateKey(selectedDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      for (let day = 1; day <= totalDays; day++) {
-        const cellDate = new Date(year, month, day);
-        cellDate.setHours(0, 0, 0, 0);
-
-        const cellKey = getDateKey(cellDate);
-        const isSelected = cellKey === selectedKey;
-        const isToday = cellDate.getTime() === today.getTime();
-        const isPast = cellDate.getTime() < today.getTime();
-
-        const dayBtn = document.createElement('button');
-
-        if (isPast) {
-          dayBtn.className = "h-9 rounded-lg border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 flex flex-col items-center justify-center";
-          dayBtn.disabled = true;
-        } else {
-          dayBtn.className = `h-9 rounded-lg border transition text-xs font-semibold flex flex-col items-center justify-center relative ${
-            isSelected 
-              ? 'cal-day-active border-lime-400 shadow-lg shadow-lime-400/20' 
-              : isToday 
-                ? 'bg-slate-800 text-lime-400 border-lime-400/50' 
-                : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
-          }`;
-
-          dayBtn.onclick = () => {
-            selectedDate = cellDate;
-            updateSelectedDateDisplay();
-            renderCalendar();
-            renderScheduleGrid();
-          };
-        }
-
-        dayBtn.innerText = day;
-        monthGrid.appendChild(dayBtn);
-      }
-    }
-
-    function changeMonth(delta) {
-      displayedMonthDate.setMonth(displayedMonthDate.getMonth() + delta);
-      renderMonthCalendar();
-    }
-
-    function renderWeekSummaryBarAndOverview() {
-      const weekLabel = document.getElementById('currentWeekRangeLabel');
-      const overviewGrid = document.getElementById('bottomWeekOverviewGrid');
-      overviewGrid.innerHTML = "";
-
-      const startOfWeek = new Date(selectedDate);
-      startOfWeek.setDate(selectedDate.getDate() - startOfWeek.getDay());
-
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-      weekLabel.innerText = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      const currentSelectedKey = getDateKey(selectedDate);
-
-      for (let i = 0; i < 7; i++) {
-        const wd = new Date(startOfWeek);
-        wd.setDate(startOfWeek.getDate() + i);
-        wd.setHours(0, 0, 0, 0);
-
-        const dKey = getDateKey(wd);
-        const isToday = wd.getTime() === today.getTime();
-        const isPast = wd.getTime() < today.getTime();
-        const isSelected = dKey === currentSelectedKey;
-
-        const card = document.createElement('button');
-        if (isPast) {
-          card.className = "p-3 rounded-xl border border-slate-900 bg-slate-950/40 text-slate-600 cursor-not-allowed opacity-40 text-center flex flex-col items-center justify-center";
-          card.disabled = true;
-        } else {
-          card.className = `p-3 rounded-xl border transition text-center flex flex-col items-center justify-center ${
-            isSelected 
-              ? 'cal-day-active border-lime-400 shadow-md' 
-              : isToday 
-                ? 'bg-slate-800 text-lime-400 border-lime-400/50' 
-                : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
-          }`;
-          card.onclick = () => {
-            selectedDate = new Date(wd);
-            updateSelectedDateDisplay();
-            renderWeekSummaryBarAndOverview();
-            renderScheduleGrid();
-          };
-        }
-
-        card.innerHTML = `
-          <span class="text-[10px] uppercase font-bold opacity-75">${dayNames[i]}</span>
-          <span class="text-sm font-extrabold mt-0.5">${wd.getDate()}</span>
+      for (let i = -2; i <= 7; i++) {
+        const d = new Date(selectedDate);
+        d.setDate(d.getDate() + i);
+        
+        const isSelected = d.toDateString() === selectedDate.toDateString();
+        const btn = document.createElement('button');
+        btn.className = `flex-shrink-0 px-3 py-2 rounded-lg text-center transition ${
+          isSelected 
+            ? 'bg-emerald-600 text-white font-bold shadow' 
+            : 'bg-gray-50 text-gray-600 hover:bg-gray-200'
+        }`;
+        
+        btn.innerHTML = `
+          <div class="text-xs uppercase">${d.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+          <div class="text-sm font-bold">${d.getDate()}</div>
         `;
 
-        overviewGrid.appendChild(card);
+        btn.onclick = () => {
+          selectedDate = new Date(d);
+          updateSelectedDateDisplay();
+          renderCalendar();
+          renderScheduleGrid();
+        };
+
+        strip.appendChild(btn);
       }
     }
 
-    function changeWeek(delta) {
-      selectedDate.setDate(selectedDate.getDate() + (delta * 7));
-      updateSelectedDateDisplay();
-      renderCalendar();
-      renderScheduleGrid();
-    }
-
-    function updateSelectedDateDisplay() {
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      document.getElementById('selectedDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
-    }
-
-    // RENDER SCHEDULE MATRIX
     function renderScheduleGrid() {
-      const grid = document.getElementById('scheduleGrid');
-      const header = document.getElementById('matrixHeader');
-      grid.innerHTML = "";
-
-      const activeDb = pendingAdminDb || getStoredData();
-      const realDb = getStoredData();
-
-      header.className = "grid grid-cols-4 gap-3 text-xs font-bold text-slate-400 pb-3 border-b border-slate-800 uppercase tracking-wider";
-      header.innerHTML = `
-        <div class="col-span-1">Timeslot (9 AM - 12 AM)</div>
-        <div class="col-span-1 text-center">Standard Main Court (₱600/hr)</div>
-        <div class="col-span-1 text-center">AC Range 1 + Machine (₱400/hr)</div>
-        <div class="col-span-1 text-center">AC Range 2 + Machine (₱400/hr)</div>
-      `;
-
-      const dateKey = getDateKey();
+      const container = document.getElementById('scheduleGrid');
+      container.innerHTML = '';
+      const dateKey = formatDateKey(selectedDate);
+      const activeDb = pendingAdminDb || cloudDb;
       const dayData = activeDb[dateKey] || {};
-      const realDayData = realDb[dateKey] || {};
 
-      OPERATING_HOURS.forEach((timeSlot, timeIdx) => {
-        const row = document.createElement('div');
-        row.className = "grid grid-cols-4 gap-3 py-3 items-center hover:bg-slate-900/40 transition rounded-lg px-1";
+      timeSlots.forEach(slot => {
+        const slotRow = document.createElement('div');
+        slotRow.className = "border border-gray-200 rounded-lg p-3 bg-gray-50 hover:bg-white transition";
 
-        const timeCol = document.createElement('div');
-        timeCol.className = "col-span-1 font-bold text-slate-200 text-xs flex items-center gap-1.5";
-        timeCol.innerHTML = `<i class="fa-regular fa-clock text-lime-400"></i> ${timeSlot}`;
-        row.appendChild(timeCol);
-
-        COURTS.forEach(court => {
-          const courtCol = document.createElement('div');
-          courtCol.className = "col-span-1 flex justify-center";
-
-          const slotKey = `${court.id}_${timeIdx}`;
-          const currentStatus = dayData[slotKey] || 'available';
-          const realStatus = realDayData[slotKey] || 'available';
-
-          const isPendingChange = (pendingAdminDb !== null) && (currentStatus !== realStatus);
-
-          const slotBtn = document.createElement('button');
-          slotBtn.className = `w-full max-w-[170px] py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-between shadow-sm ${
-            currentStatus === 'available' ? 'status-available hover:scale-[1.02]' : 'status-reserved'
-          } ${isPendingChange ? 'status-pending-change' : ''}`;
-
-          const isCustomerSelected = customerSelections.some(s => s.dateKey === dateKey && s.slotKey === slotKey);
-          if (isCustomerSelected) {
-            slotBtn.classList.add('ring-2', 'ring-lime-400');
-          }
-
-          slotBtn.innerHTML = `
-            <span class="flex items-center gap-1">
-              <i class="fa-solid ${currentStatus === 'available' ? 'fa-circle-check text-lime-400' : 'fa-circle-xmark text-red-400'}"></i>
-              ${currentStatus === 'available' ? 'Available' : 'Reserved'}
-            </span>
-            <span class="opacity-75 text-[10px]">₱${court.price}</span>
+        let courtCardsHtml = '';
+        courts.forEach(court => {
+          const slotKey = `${slot}_${court}`;
+          const isReserved = dayData[slotKey] === "Reserved";
+          
+          courtCardsHtml += `
+            <div onclick="handleSlotClick('${dateKey}', '${slotKey}', ${isReserved})" 
+                 class="p-2.5 rounded-md border text-center cursor-pointer transition flex flex-col justify-between ${
+                   isReserved 
+                     ? 'bg-rose-50 border-rose-300 text-rose-800 hover:bg-rose-100' 
+                     : 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
+                 }">
+              <span class="text-xs font-semibold text-gray-500">${court}</span>
+              <span class="text-sm font-bold mt-1">${isReserved ? 'Reserved' : 'Available'}</span>
+            </div>
           `;
-
-          slotBtn.onclick = () => handleSlotClick(dateKey, slotKey, court, timeSlot, currentStatus);
-
-          courtCol.appendChild(slotBtn);
-          row.appendChild(courtCol);
         });
 
-        grid.appendChild(row);
-      });
-    }
-
-    function handleSlotClick(dateKey, slotKey, court, timeSlot, currentStatus) {
-      if (isAdmin) {
-        if (!pendingAdminDb) {
-          pendingAdminDb = JSON.parse(JSON.stringify(getStoredData()));
-        }
-
-        if (!pendingAdminDb[dateKey]) pendingAdminDb[dateKey] = {};
-
-        const newStatus = currentStatus === 'available' ? 'reserved' : 'available';
-        pendingAdminDb[dateKey][slotKey] = newStatus;
-
-        showAdminSaveBar();
-        renderScheduleGrid();
-      } else {
-        if (currentStatus === 'reserved') {
-          alert("This slot is already reserved.");
-          return;
-        }
-
-        const existingIdx = customerSelections.findIndex(s => s.dateKey === dateKey && s.slotKey === slotKey);
-
-        if (existingIdx > -1) {
-          customerSelections.splice(existingIdx, 1);
-        } else {
-          customerSelections.push({
-            dateKey,
-            dateDisplay: selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            slotKey,
-            courtName: court.name,
-            timeSlot,
-            price: court.price
-          });
-        }
-
-        renderScheduleGrid();
-        updateCustomerSummary();
-      }
-    }
-
-    function updateCustomerSummary() {
-      const container = document.getElementById('selectedSlotsSummary');
-      
-      if (customerSelections.length === 0) {
-        container.innerHTML = `<span class="text-slate-500 italic">No timeslots selected yet. Tap any available slot above to select.</span>`;
-        return;
-      }
-
-      let totalAmount = 0;
-      let html = `<div class="space-y-1.5">`;
-
-      customerSelections.forEach(sel => {
-        totalAmount += sel.price;
-        html += `
-          <div class="flex justify-between items-center text-slate-200 border-b border-slate-800/80 pb-1">
-            <span><strong>${sel.courtName}</strong> (${sel.dateDisplay}, ${sel.timeSlot})</span>
-            <span class="text-lime-400 font-bold">₱${sel.price}</span>
+        slotRow.innerHTML = `
+          <div class="text-xs font-bold text-gray-600 mb-2 flex items-center">
+            <i class="fa-regular fa-clock mr-1 text-gray-400"></i> ${slot}
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            ${courtCardsHtml}
           </div>
         `;
+
+        container.appendChild(slotRow);
       });
-
-      html += `
-        <div class="pt-1 flex justify-between items-center text-sm font-black text-white">
-          <span>Estimated Total:</span>
-          <span class="text-lime-400 text-base">₱${totalAmount}</span>
-        </div>
-      </div>`;
-
-      container.innerHTML = html;
     }
 
-    function bulkSetStatus(status) {
-      if (!isAdmin) return;
+    // Slot Modification & Admin Save Logic
+    function handleSlotClick(dateKey, slotKey, currentStatus) {
+      if (!isAdminMode) return;
+
       if (!pendingAdminDb) {
-        pendingAdminDb = JSON.parse(JSON.stringify(getStoredData()));
+        pendingAdminDb = JSON.parse(JSON.stringify(cloudDb));
       }
 
-      const dateKey = getDateKey();
-      if (!pendingAdminDb[dateKey]) pendingAdminDb[dateKey] = {};
+      if (!pendingAdminDb[dateKey]) {
+        pendingAdminDb[dateKey] = {};
+      }
 
-      OPERATING_HOURS.forEach((_, timeIdx) => {
-        COURTS.forEach(court => {
-          const slotKey = `${court.id}_${timeIdx}`;
-          pendingAdminDb[dateKey][slotKey] = status;
-        });
-      });
-
-      showAdminSaveBar();
-      renderScheduleGrid();
-    }
-
-    function showAdminSaveBar() {
+      pendingAdminDb[dateKey][slotKey] = currentStatus ? "Available" : "Reserved";
       document.getElementById('adminSaveBar').classList.remove('hidden');
-    }
-
-    function hideAdminSaveBar() {
-      document.getElementById('adminSaveBar').classList.add('hidden');
+      renderScheduleGrid();
     }
 
     async function saveAdminChanges() {
-      if (pendingAdminDb) {
-        const btn = document.getElementById('saveChangesBtn');
-        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Saving to Cloud...`;
-        btn.disabled = true;
+      if (!pendingAdminDb) return;
 
-        cloudDb = pendingAdminDb;
+      const btn = document.getElementById('saveChangesBtn');
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Saving to Cloud...`;
+      btn.disabled = true;
 
-        try {
-          await fetch(SCRIPT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ action: "saveSchedule", data: cloudDb })
-          });
-          alert("Schedule updates successfully saved across all devices!");
-        } catch (err) {
-          alert("Saved locally, but error syncing with cloud database.");
-          console.error(err);
-        } finally {
-          btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Changes`;
-          btn.disabled = false;
-          pendingAdminDb = null;
-        }
-      }
-      hideAdminSaveBar();
-      renderScheduleGrid();
-    }
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ action: "saveSchedule", data: pendingAdminDb })
+        });
 
-    function discardAdminChanges() {
-      pendingAdminDb = null;
-      hideAdminSaveBar();
-      renderScheduleGrid();
-    }
-
-    function openAdminModal() {
-      if (isAdmin) {
-        if (pendingAdminDb) {
-          if (!confirm("You have unsaved changes. Exit without saving?")) {
-            return;
-          }
-          pendingAdminDb = null;
-          hideAdminSaveBar();
-        }
-
-        isAdmin = false;
-        document.getElementById('adminBtnText').innerText = "Admin Access";
-        document.getElementById('burgerModeBadge').innerText = "Customer (Read-Only)";
-        document.getElementById('adminControls').classList.add('hidden');
+        cloudDb = JSON.parse(JSON.stringify(pendingAdminDb));
+        pendingAdminDb = null;
+        document.getElementById('adminSaveBar').classList.add('hidden');
+        alert("Schedule updates successfully saved across all devices!");
+      } catch (err) {
+        console.error("Cloud save failed:", err);
+        alert("Saved locally, but error syncing with cloud database.");
+      } finally {
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Changes`;
+        btn.disabled = false;
         renderScheduleGrid();
-        return;
       }
-
-      document.getElementById('adminModal').classList.remove('hidden');
-      document.getElementById('adminPinInput').value = "";
-      document.getElementById('pinError').classList.add('hidden');
-      document.getElementById('adminPinInput').focus();
     }
 
-    function closeAdminModal() {
-      document.getElementById('adminModal').classList.add('hidden');
-    }
-
-    function verifyAdminPin() {
-      const pin = document.getElementById('adminPinInput').value.trim();
-      if (pin === ADMIN_PIN) {
-        isAdmin = true;
-        closeAdminModal();
-        document.getElementById('adminBtnText').innerText = "Exit Admin Mode";
-        document.getElementById('burgerModeBadge').innerText = "Admin Mode Active";
-        document.getElementById('adminControls').classList.remove('hidden');
+    // Navigation & General Event Listeners
+    function setupEventListeners() {
+      document.getElementById('prevDayBtn').onclick = () => {
+        selectedDate.setDate(selectedDate.getDate() - 1);
+        updateSelectedDateDisplay();
+        renderCalendar();
         renderScheduleGrid();
-      } else {
-        document.getElementById('pinError').classList.remove('hidden');
-      }
+      };
+
+      document.getElementById('nextDayBtn').onclick = () => {
+        selectedDate.setDate(selectedDate.getDate() + 1);
+        updateSelectedDateDisplay();
+        renderCalendar();
+        renderScheduleGrid();
+      };
+
+      document.getElementById('menuBtn').onclick = () => {
+        const inputPin = prompt("Enter Admin Access PIN:");
+        if (inputPin === ADMIN_PIN) {
+          isAdminMode = !isAdminMode;
+          document.getElementById('adminControls').classList.toggle('hidden', !isAdminMode);
+          alert(isAdminMode ? "Admin Mode Enabled" : "Admin Mode Disabled");
+          renderScheduleGrid();
+        } else if (inputPin !== null) {
+          alert("Incorrect PIN.");
+        }
+      };
+
+      document.getElementById('saveChangesBtn').onclick = saveAdminChanges;
+
+      document.getElementById('discardChangesBtn').onclick = () => {
+        pendingAdminDb = null;
+        document.getElementById('adminSaveBar').classList.add('hidden');
+        renderScheduleGrid();
+      };
+
+      document.getElementById('markAllAvailBtn').onclick = () => setAllSlotsStatus("Available");
+      document.getElementById('markAllResBtn').onclick = () => setAllSlotsStatus("Reserved");
     }
 
-    function copyGcashNumber() {
-      navigator.clipboard.writeText("09178250508");
-      const copyBtnText = document.getElementById('copyBtnText');
-      copyBtnText.innerText = "Copied (09178250508)!";
-      setTimeout(() => {
-        copyBtnText.innerText = "Copy GCash Number";
-      }, 2000);
-    }
+    function setAllSlotsStatus(status) {
+      if (!pendingAdminDb) pendingAdminDb = JSON.parse(JSON.stringify(cloudDb));
+      const dateKey = formatDateKey(selectedDate);
+      if (!pendingAdminDb[dateKey]) pendingAdminDb[dateKey] = {};
 
-    function sendToMessenger() {
-      if (customerSelections.length === 0) {
-        alert("Please select at least one available court timeslot first!");
-        return;
-      }
-
-      let message = "Hi re:Serve pickleball court! I would like to book the following reservation:\n\n";
-      let total = 0;
-
-      customerSelections.forEach((sel, i) => {
-        message += `${i + 1}. ${sel.courtName}\n   📅 Date: ${sel.dateDisplay}\n   ⏰ Time: ${sel.timeSlot}\n   ₱ Fee: ₱${sel.price}\n\n`;
-        total += sel.price;
+      timeSlots.forEach(slot => {
+        courts.forEach(court => {
+          pendingAdminDb[dateKey][`${slot}_${court}`] = status;
+        });
       });
 
-      message += `Total Fee: ₱${total}\n\nGCash Payment Number: 09178250508 (BR**N V.)\nPolicy Note: I understand that schedules follow a First Paid, First Serve policy. I am sending my GCash proof now. Thank you!`;
-
-      navigator.clipboard.writeText(message);
-
-      const encodedMsg = encodeURIComponent(message);
-      const targetUrl = `https://m.me/${FB_PAGE_ID}?text=${encodedMsg}`;
-
-      const directBtn = document.getElementById('messengerDirectBtn');
-      directBtn.href = targetUrl;
-
-      customerSelections = [];
-      updateCustomerSummary();
+      document.getElementById('adminSaveBar').classList.remove('hidden');
       renderScheduleGrid();
-
-      document.getElementById('redirectModal').classList.remove('hidden');
-
-      setTimeout(() => {
-        window.open(targetUrl, '_blank');
-      }, 300);
-    }
-
-    function closeRedirectModal() {
-      document.getElementById('redirectModal').classList.add('hidden');
     }
   </script>
 </body>
