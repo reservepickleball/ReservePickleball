@@ -164,6 +164,7 @@
 
     function updateSyncStatus(isLive) {
       const badge = document.getElementById('syncBadge');
+      if (!badge) return;
       if (isLive) {
         badge.className = "text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm";
         badge.innerHTML = `<i class="fa-solid fa-cloud"></i> Live Cloud Sync`;
@@ -173,15 +174,18 @@
       }
     }
 
-    // Consolidated Initialization: Await cloud fetch BEFORE rendering UI
-    window.addEventListener("DOMContentLoaded", async () => {
+    // Page Initialization
+    window.addEventListener("DOMContentLoaded", () => {
       selectedDate.setHours(0, 0, 0, 0);
       renderCalendar();
       updateSelectedDateDisplay();
-
-      // Fetch cloud database data first so cloudDb contains fresh state
-      await fetchCloudSchedule();
-
+      
+      // Initial render (shows empty/default state immediately)
+      renderScheduleGrid();
+      
+      // Fetch cloud data and re-render grid automatically once data arrives
+      fetchCloudSchedule();
+      
       setupEventListeners();
     });
 
@@ -205,18 +209,21 @@
         console.error("Cloud fetch error:", err);
         updateSyncStatus(false);
       } finally {
-        // Redraw grid with fresh database values
+        // Forces UI grid to redraw with fetched database values
         renderScheduleGrid();
       }
     }
 
     function updateSelectedDateDisplay() {
+      const el = document.getElementById('currentDateDisplay');
+      if (!el) return;
       const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
-      document.getElementById('currentDateDisplay').innerText = selectedDate.toLocaleDateString('en-US', options);
+      el.innerText = selectedDate.toLocaleDateString('en-US', options);
     }
 
     function renderCalendar() {
       const strip = document.getElementById('calendarStrip');
+      if (!strip) return;
       strip.innerHTML = '';
 
       for (let i = -2; i <= 7; i++) {
@@ -249,7 +256,9 @@
 
     function renderScheduleGrid() {
       const container = document.getElementById('scheduleGrid');
+      if (!container) return;
       container.innerHTML = '';
+      
       const dateKey = formatDateKey(selectedDate);
       const activeDb = pendingAdminDb || cloudDb;
       const dayData = activeDb[dateKey] || {};
@@ -301,7 +310,8 @@
       }
 
       pendingAdminDb[dateKey][slotKey] = currentStatus ? "Available" : "Reserved";
-      document.getElementById('adminSaveBar').classList.remove('hidden');
+      const saveBar = document.getElementById('adminSaveBar');
+      if (saveBar) saveBar.classList.remove('hidden');
       renderScheduleGrid();
     }
 
@@ -309,8 +319,10 @@
       if (!pendingAdminDb) return;
 
       const btn = document.getElementById('saveChangesBtn');
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Saving to Cloud...`;
-      btn.disabled = true;
+      if (btn) {
+        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Saving to Cloud...`;
+        btn.disabled = true;
+      }
 
       try {
         await fetch(SCRIPT_URL, {
@@ -322,55 +334,76 @@
 
         cloudDb = JSON.parse(JSON.stringify(pendingAdminDb));
         pendingAdminDb = null;
-        document.getElementById('adminSaveBar').classList.add('hidden');
+        const saveBar = document.getElementById('adminSaveBar');
+        if (saveBar) saveBar.classList.add('hidden');
         alert("Schedule updates successfully saved across all devices!");
       } catch (err) {
         console.error("Cloud save failed:", err);
         alert("Saved locally, but error syncing with cloud database.");
       } finally {
-        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Changes`;
-        btn.disabled = false;
+        if (btn) {
+          btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Changes`;
+          btn.disabled = false;
+        }
         renderScheduleGrid();
       }
     }
 
     function setupEventListeners() {
-      document.getElementById('prevDayBtn').onclick = () => {
-        selectedDate.setDate(selectedDate.getDate() - 1);
-        updateSelectedDateDisplay();
-        renderCalendar();
-        renderScheduleGrid();
-      };
-
-      document.getElementById('nextDayBtn').onclick = () => {
-        selectedDate.setDate(selectedDate.getDate() + 1);
-        updateSelectedDateDisplay();
-        renderCalendar();
-        renderScheduleGrid();
-      };
-
-      document.getElementById('menuBtn').onclick = () => {
-        const inputPin = prompt("Enter Admin Access PIN:");
-        if (inputPin === ADMIN_PIN) {
-          isAdminMode = !isAdminMode;
-          document.getElementById('adminControls').classList.toggle('hidden', !isAdminMode);
-          alert(isAdminMode ? "Admin Mode Enabled" : "Admin Mode Disabled");
+      const prevBtn = document.getElementById('prevDayBtn');
+      if (prevBtn) {
+        prevBtn.onclick = () => {
+          selectedDate.setDate(selectedDate.getDate() - 1);
+          updateSelectedDateDisplay();
+          renderCalendar();
           renderScheduleGrid();
-        } else if (inputPin !== null) {
-          alert("Incorrect PIN.");
-        }
-      };
+        };
+      }
 
-      document.getElementById('saveChangesBtn').onclick = saveAdminChanges;
+      const nextBtn = document.getElementById('nextDayBtn');
+      if (nextBtn) {
+        nextBtn.onclick = () => {
+          selectedDate.setDate(selectedDate.getDate() + 1);
+          updateSelectedDateDisplay();
+          renderCalendar();
+          renderScheduleGrid();
+        };
+      }
 
-      document.getElementById('discardChangesBtn').onclick = () => {
-        pendingAdminDb = null;
-        document.getElementById('adminSaveBar').classList.add('hidden');
-        renderScheduleGrid();
-      };
+      const menuBtn = document.getElementById('menuBtn');
+      if (menuBtn) {
+        menuBtn.onclick = () => {
+          const inputPin = prompt("Enter Admin Access PIN:");
+          if (inputPin === ADMIN_PIN) {
+            isAdminMode = !isAdminMode;
+            const adminControls = document.getElementById('adminControls');
+            if (adminControls) adminControls.classList.toggle('hidden', !isAdminMode);
+            alert(isAdminMode ? "Admin Mode Enabled" : "Admin Mode Disabled");
+            renderScheduleGrid();
+          } else if (inputPin !== null) {
+            alert("Incorrect PIN.");
+          }
+        };
+      }
 
-      document.getElementById('markAllAvailBtn').onclick = () => setAllSlotsStatus("Available");
-      document.getElementById('markAllResBtn').onclick = () => setAllSlotsStatus("Reserved");
+      const saveBtn = document.getElementById('saveChangesBtn');
+      if (saveBtn) saveBtn.onclick = saveAdminChanges;
+
+      const discardBtn = document.getElementById('discardChangesBtn');
+      if (discardBtn) {
+        discardBtn.onclick = () => {
+          pendingAdminDb = null;
+          const saveBar = document.getElementById('adminSaveBar');
+          if (saveBar) saveBar.classList.add('hidden');
+          renderScheduleGrid();
+        };
+      }
+
+      const markAvailBtn = document.getElementById('markAllAvailBtn');
+      if (markAvailBtn) markAvailBtn.onclick = () => setAllSlotsStatus("Available");
+
+      const markResBtn = document.getElementById('markAllResBtn');
+      if (markResBtn) markResBtn.onclick = () => setAllSlotsStatus("Reserved");
     }
 
     function setAllSlotsStatus(status) {
@@ -384,7 +417,8 @@
         });
       });
 
-      document.getElementById('adminSaveBar').classList.remove('hidden');
+      const saveBar = document.getElementById('adminSaveBar');
+      if (saveBar) saveBar.classList.remove('hidden');
       renderScheduleGrid();
     }
   </script>
