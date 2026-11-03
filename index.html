@@ -173,13 +173,13 @@
       }
     }
 
-    // Consolidated Initialization & Async Fetch
+    // Consolidated Initialization: Await cloud fetch BEFORE rendering UI
     window.addEventListener("DOMContentLoaded", async () => {
       selectedDate.setHours(0, 0, 0, 0);
       renderCalendar();
       updateSelectedDateDisplay();
 
-      // Await cloud data load first so cloudDb is populated prior to rendering
+      // Fetch cloud database data first so cloudDb contains fresh state
       await fetchCloudSchedule();
 
       setupEventListeners();
@@ -205,6 +205,7 @@
         console.error("Cloud fetch error:", err);
         updateSyncStatus(false);
       } finally {
+        // Redraw grid with fresh database values
         renderScheduleGrid();
       }
     }
